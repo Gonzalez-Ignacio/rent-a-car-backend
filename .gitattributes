@@ -1,0 +1,8 @@
+# Configurar archivos de texto para usar LF
+* text=auto eol=lf
+
+# Puedes especificar tipos de archivo específicos
+*.ts text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.gitignore text 
