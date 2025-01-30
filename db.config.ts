@@ -7,11 +7,11 @@ export function getDbConfig() {
   if (process.env.NODE_ENV === 'development') {
     const config: TypeOrmModuleOptions = {
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'user',
-      password: 'user_password',
-      database: 'my_database',
+      host: process.env.MYSQL_HOST,
+      port: parseInt(process.env.MYSQL_PORT || '3306', 10),
+      username: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     };

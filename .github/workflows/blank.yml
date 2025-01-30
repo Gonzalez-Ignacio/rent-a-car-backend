@@ -37,6 +37,15 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Set up Docker Compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
+  
+      - name: Start services with Docker Compose
+        run: docker compose up -d
+  
+      - name: Wait for MySQL to be ready
+        run: 
+
       - name: Install dependencies
         run: npm install
 
