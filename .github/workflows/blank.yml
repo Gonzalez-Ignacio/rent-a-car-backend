@@ -44,7 +44,11 @@ jobs:
         run: docker compose up -d
   
       - name: Wait for MySQL to be ready
-        run: 
+        run: |
+        until docker-compose exec mysql mysqladmin ping -h "127.0.0.1" -P "3306" --silent; do
+          echo 'Waiting for MySQL...'
+          sleep 3
+        done
 
       - name: Install dependencies
         run: npm install
