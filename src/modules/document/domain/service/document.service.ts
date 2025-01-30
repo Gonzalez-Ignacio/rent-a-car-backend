@@ -13,12 +13,21 @@ export class DocumentService {
     private readonly documentRepository: DocumentRepository,
   ) {}
 
-  getDocuments() {
-    return this.documentRepository.findAll();
+  async getDocuments(userId: number): Promise<Document[]> {
+    const userFound = await this.userService.getUser(userId);
+
+    if (!userFound) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.documentRepository.findAllDocumentsForAUser(userId);
   }
 
-  async getDocument(id: number): Promise<Document> {
-    const documentFound = await this.documentRepository.findById(id);
+  async getDocument(userId: number, documentId: number): Promise<Document> {
+    const documentFound = await this.documentRepository.findOneDocument(
+      userId,
+      documentId,
+    );
 
     if (!documentFound) {
       throw new HttpException('Document not found', HttpStatus.NOT_FOUND);
@@ -27,42 +36,67 @@ export class DocumentService {
     return documentFound;
   }
 
-  async createDocument(document: CreateDocumentDto) {
+  async createDocument(userId: number, document: CreateDocumentDto) {
     const newDocument = DocumentMapper.dtoToEntity(document);
+    newDocument.user = await this.userService.getUser(userId);
 
-    const documentFound = await this.documentRepository.findByUrl(
+    const documentFoundByUrl = await this.documentRepository.findByUrl(
       newDocument.url,
     );
 
-    if (documentFound) {
-      throw new HttpException('Document already exists', HttpStatus.CONFLICT);
+    const documentFoundBySrc = await this.documentRepository.findBySrc(
+      newDocument.src,
+    );
+
+    if (documentFoundByUrl) {
+      throw new HttpException(
+        'Document already exists with this URL',
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    if (documentFoundBySrc) {
+      throw new HttpException(
+        'Document already exists with this Src',
+        HttpStatus.CONFLICT,
+      );
     }
 
     return this.documentRepository.save(newDocument);
   }
 
-  async updateDocument(id: number, document: UpdateDocumentDto) {
-    const documentFound = await this.documentRepository.findById(id);
+  async updateDocument(
+    userId: number,
+    documentId: number,
+    documentUpdate: UpdateDocumentDto,
+  ) {
+    const documentFound = await this.documentRepository.findOneDocument(
+      userId,
+      documentId,
+    );
 
     if (!documentFound) {
       throw new HttpException('Document not found', HttpStatus.NOT_FOUND);
     }
 
     const updateDocument = DocumentMapper.dtoToUpdateEntity(
-      document,
+      documentUpdate,
       documentFound,
     );
 
     return this.documentRepository.save(updateDocument);
   }
 
-  async deleteDocument(id: number) {
-    const resultDelete = await this.documentRepository.findById(id);
+  async deleteDocument(userId: number, documentId: number): Promise<void> {
+    const resultDelete = await this.documentRepository.findOneDocument(
+      userId,
+      documentId,
+    );
 
     if (!resultDelete) {
       throw new HttpException('Document not found', HttpStatus.NOT_FOUND);
     }
 
-    await this.documentRepository.delete(id);
+    await this.documentRepository.delete(documentId);
   }
 }

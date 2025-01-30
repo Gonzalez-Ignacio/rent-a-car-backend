@@ -11,8 +11,10 @@ export class DocumentRepository implements IDocumentRepository {
     private readonly documentRepository: Repository<Document>,
   ) {}
 
-  async findAll(): Promise<Document[]> {
-    return await this.documentRepository.find();
+  async findAllDocumentsForAUser(userId: number): Promise<Document[]> {
+    return await this.documentRepository.find({
+      where: { user: { id: userId } },
+    });
   }
 
   async save(document: Document): Promise<Document> {
@@ -23,15 +25,24 @@ export class DocumentRepository implements IDocumentRepository {
     return await this.documentRepository.findOneBy({ url });
   }
 
-  async findById(id: number): Promise<Document | null> {
-    return await this.documentRepository.findOneBy({ id });
+  async findBySrc(src: string): Promise<Document | null> {
+    return await this.documentRepository.findOneBy({ src });
+  }
+
+  async findOneDocument(
+    userId: number,
+    documentId: number,
+  ): Promise<Document | null> {
+    return await this.documentRepository.findOne({
+      where: { user: { id: userId }, id: documentId },
+    });
   }
 
   async update(document: Document): Promise<void> {
     await this.documentRepository.update(document.id, document);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.documentRepository.delete(id);
+  async delete(documentId: number): Promise<void> {
+    await this.documentRepository.delete(documentId);
   }
 }

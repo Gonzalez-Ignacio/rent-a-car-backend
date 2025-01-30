@@ -17,31 +17,44 @@ import { UpdateDocumentDto } from '../domain/dto/update-document.dto';
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
-  @Get()
-  getDocuments(): Promise<Document[]> {
-    return this.documentService.getDocuments();
+  @Get('user/:userId')
+  getDocuments(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<Document[]> {
+    return this.documentService.getDocuments(userId);
   }
 
-  @Get(':id')
-  getDocument(@Param('id', ParseIntPipe) id: number): Promise<Document> {
-    return this.documentService.getDocument(id);
+  @Get(':documentId/user/:userId')
+  getDocument(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+  ): Promise<Document> {
+    return this.documentService.getDocument(userId, documentId);
   }
 
   @Post()
   createPost(@Body() newDocument: CreateDocumentDto) {
-    return this.documentService.createDocument(newDocument);
+    return this.documentService.createDocument(newDocument.userId, newDocument);
   }
 
-  @Patch(':id')
+  @Patch(':documentId/user/:userId')
   updateDocument(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
     @Body() updateDocument: UpdateDocumentDto,
-  ) {
-    return this.documentService.updateDocument(id, updateDocument);
+  ): Promise<Document> {
+    return this.documentService.updateDocument(
+      userId,
+      documentId,
+      updateDocument,
+    );
   }
 
-  @Delete(':id')
-  deleteDocument(@Param('id', ParseIntPipe) id: number) {
-    return this.documentService.deleteDocument(id);
+  @Delete(':documentId/user/:userId')
+  deleteDocument(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+  ) {
+    return this.documentService.deleteDocument(userId, documentId);
   }
 }
