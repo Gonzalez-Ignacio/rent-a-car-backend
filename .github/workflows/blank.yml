@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
@@ -12,24 +12,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:latest
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER}}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
-      - name: Checkout repository
+      - name: Check out repository code
         uses: actions/checkout@v2
 
       - name: Set up Node.js
@@ -37,21 +21,8 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Set up Docker Compose
-        run: sudo apt-get update && sudo apt-get install -y docker-compose
-  
-      - name: Start services with Docker Compose
-        run: docker compose up -d
-  
-      - name: Wait for MySQL to be ready
-        run: |
-        until docker-compose exec mysql mysqladmin ping -h "127.0.0.1" -P "3306" --silent; do
-          echo 'Waiting for MySQL...'
-          sleep 3
-        done
-
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
-        run: npm run build
+      - name: Build
+        run: npm run 
