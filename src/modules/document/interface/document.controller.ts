@@ -43,11 +43,7 @@ export class DocumentController {
     @Param('documentId', ParseIntPipe) documentId: number,
     @Body() updateDocument: UpdateDocumentDto,
   ): Promise<Document> {
-    return this.documentService.updateDocument(
-      userId,
-      documentId,
-      updateDocument,
-    );
+    return this.documentService.update(userId, documentId, updateDocument);
   }
 
   @Delete(':documentId/user/:userId')
@@ -55,6 +51,6 @@ export class DocumentController {
     @Param('userId', ParseIntPipe) userId: number,
     @Param('documentId', ParseIntPipe) documentId: number,
   ) {
-    return this.documentService.deleteDocument(userId, documentId);
+    return this.documentService.delete(userId, documentId);
   }
 }
