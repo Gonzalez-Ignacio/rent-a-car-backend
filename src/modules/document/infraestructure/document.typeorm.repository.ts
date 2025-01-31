@@ -11,7 +11,7 @@ export class DocumentRepository implements IDocumentRepository {
     private readonly documentRepository: Repository<Document>,
   ) {}
 
-  async findAllDocumentsForAUser(userId: number): Promise<Document[]> {
+  async findAllDocumentsByUser(userId: number): Promise<Document[]> {
     return await this.documentRepository.find({
       where: { user: { id: userId } },
     });

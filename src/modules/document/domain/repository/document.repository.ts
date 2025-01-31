@@ -1,7 +1,7 @@
 import { Document } from '../entity/document.entity';
 
 export interface IDocumentRepository {
-  findAllDocumentsForAUser(userId: number): Promise<Document[]>;
+  findAllDocumentsByUser(userId: number): Promise<Document[]>;
   save(document: Document): Promise<Document>;
   findByUrl(url: string): Promise<Document | null>;
   findBySrc(src: string): Promise<Document | null>;

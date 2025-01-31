@@ -20,7 +20,7 @@ export class DocumentService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    return this.documentRepository.findAllDocumentsForAUser(userId);
+    return this.documentRepository.findAllDocumentsByUser(userId);
   }
 
   async getDocument(userId: number, documentId: number): Promise<Document> {
@@ -30,13 +30,25 @@ export class DocumentService {
     );
 
     if (!documentFound) {
-      throw new HttpException('Document not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Document or User not found',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     return documentFound;
   }
 
   async createDocument(userId: number, document: CreateDocumentDto) {
+    if (
+      !document.url ||
+      !document.src ||
+      !document.title ||
+      !document.description
+    ) {
+      throw new HttpException('Fields cannot be empty', HttpStatus.BAD_REQUEST);
+    }
+
     const newDocument = DocumentMapper.dtoToEntity(document);
     newDocument.user = await this.userService.getUser(userId);
 
@@ -65,7 +77,7 @@ export class DocumentService {
     return this.documentRepository.save(newDocument);
   }
 
-  async updateDocument(
+  async update(
     userId: number,
     documentId: number,
     documentUpdate: UpdateDocumentDto,
@@ -87,7 +99,7 @@ export class DocumentService {
     return this.documentRepository.save(updateDocument);
   }
 
-  async deleteDocument(userId: number, documentId: number): Promise<void> {
+  async delete(userId: number, documentId: number): Promise<void> {
     const resultDelete = await this.documentRepository.findOneDocument(
       userId,
       documentId,

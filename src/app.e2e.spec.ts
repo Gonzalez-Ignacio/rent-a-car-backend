@@ -5,10 +5,22 @@ import { CreateUserDto } from './modules/user/domain/dto/create-user.dto';
 import { Role } from './modules/user/domain/entity/user.entity';
 import * as request from 'supertest';
 import { Server } from 'http';
+import { CreateDocumentDto } from './modules/document/domain/dto/create-document.dto';
 
 describe('App', () => {
   let app: INestApplication;
   let httpServer: Server;
+
+  const newFirstUser: CreateUserDto = {
+    firstName: 'test first name',
+    lastName: 'test last name',
+    dob: new Date(),
+    email: 'test@test.com',
+    address: 'test address',
+    country: 'test country',
+    role: Role.USER,
+    documents: [],
+  };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -22,17 +34,6 @@ describe('App', () => {
 
   describe('User', () => {
     describe('/users (POST)', () => {
-      const newFirstUser: CreateUserDto = {
-        firstName: 'test first name',
-        lastName: 'test last name',
-        dob: new Date(),
-        email: 'test@test.com',
-        address: 'test address',
-        country: 'test country',
-        role: Role.USER,
-        documents: [],
-      };
-
       it('should create a user', async () => {
         const response = await request(httpServer)
           .post('/users')
@@ -176,6 +177,189 @@ describe('App', () => {
         expect(response.body).not.toHaveProperty('country');
         expect(response.body).not.toHaveProperty('role');
         expect(response.body).not.toHaveProperty('documents');
+        expect(response.body).not.toHaveProperty('createdAt');
+        expect(response.body).not.toHaveProperty('updatedAt');
+      });
+
+      it('should not delete a user by id that does not exist', async () => {
+        await request(httpServer).delete('/users/999').expect(404);
+      });
+    });
+  });
+
+  describe('Documents', () => {
+    beforeAll(async () => {
+      await request(httpServer).post('/users').send(newFirstUser);
+    });
+
+    describe('/documents (POST)', () => {
+      it('should create a document', async () => {
+        const newDocument: CreateDocumentDto = {
+          userId: 2,
+          url: 'test url',
+          src: 'test src',
+          title: 'test title',
+          description: 'test description',
+        };
+
+        const response = await request(httpServer)
+          .post('/documents')
+          .send(newDocument)
+          .expect(201);
+
+        expect(response.body).toHaveProperty('id');
+        expect(response.body).toHaveProperty('url', 'test url');
+        expect(response.body).toHaveProperty('src', 'test src');
+        expect(response.body).toHaveProperty('title', 'test title');
+        expect(response.body).toHaveProperty('description', 'test description');
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not create a document with empty fields ', async () => {
+        const response = await request(httpServer)
+          .post('/documents')
+          .send({})
+          .expect(400);
+
+        expect(response.body).toHaveProperty('message');
+      });
+
+      it('should not create a document with the same url ', async () => {
+        const newDocument1: CreateDocumentDto = {
+          userId: 2,
+          url: 'test url',
+          src: 'test src',
+          title: 'test title',
+          description: 'test description',
+        };
+
+        const response = await request(httpServer)
+          .post('/documents')
+          .send(newDocument1)
+          .expect(409);
+
+        expect(response.body).toHaveProperty('message');
+      });
+
+      it('should not create a document with the same src ', async () => {
+        const newDocument: CreateDocumentDto = {
+          userId: 2,
+          url: 'test url',
+          src: 'test src',
+          title: 'test title',
+          description: 'test description',
+        };
+
+        const response = await request(httpServer)
+          .post('/documents')
+          .send(newDocument)
+          .expect(409);
+
+        expect(response.body).toHaveProperty('message');
+      });
+    });
+
+    describe('user/:userId (GET)', () => {
+      it('should get all documents by User', async () => {
+        const newDocument2: CreateDocumentDto = {
+          userId: 2,
+          url: 'test2 url',
+          src: 'test2 src',
+          title: 'test title 2',
+          description: 'test description 2',
+        };
+        await request(httpServer).post('/documents').send(newDocument2);
+
+        await request(httpServer)
+          .get('/documents/user/2')
+          .expect(200)
+          .then((res) => {
+            const body = res.body as string[];
+
+            // @ts-error
+            const expected = expect.arrayContaining([
+              expect.objectContaining({
+                url: expect.any(String) as string,
+                src: expect.any(String) as string,
+                title: expect.any(String) as string,
+                description: expect.any(String) as string,
+              }),
+            ]) as unknown as string[];
+
+            expect(body).toEqual(expected);
+          });
+      });
+    });
+
+    describe(':documentId/user/:userId (GET)', () => {
+      it('should get a document by id', async () => {
+        const response = await request(httpServer)
+          .get('/documents/1/user/2')
+          .expect(200);
+
+        expect(response.body).toHaveProperty('id', 1);
+        expect(response.body).toHaveProperty('url', 'test url');
+        expect(response.body).toHaveProperty('src', 'test src');
+        expect(response.body).toHaveProperty('title', 'test title');
+        expect(response.body).toHaveProperty('description', 'test description');
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not get a document or user by id that does not exist', async () => {
+        await request(httpServer).get('/documents/999/user/999').expect(404);
+      });
+    });
+
+    describe(':documentId/user/:userId (PATCH)', () => {
+      it('should update a document by id', async () => {
+        const response = await request(httpServer)
+          .patch('/documents/1/user/2')
+          .send({
+            url: 'test update url 2',
+            src: 'test update src 2',
+            title: 'test update title 2',
+            description: 'test update description 2',
+          })
+          .expect(200);
+
+        expect(response.body).toHaveProperty('id', 1);
+        expect(response.body).toHaveProperty('url', 'test update url 2');
+        expect(response.body).toHaveProperty('src', 'test update src 2');
+        expect(response.body).toHaveProperty('title', 'test update title 2');
+        expect(response.body).toHaveProperty(
+          'description',
+          'test update description 2',
+        );
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not update a document or user by id that does not exist', async () => {
+        await request(httpServer)
+          .patch('/documents/999/user/999')
+          .send({
+            url: 'test update url 2',
+            src: 'test update src 2',
+            title: 'test update title 2',
+            description: 'test update description 2',
+          })
+          .expect(404);
+      });
+    });
+
+    describe(':documentId/user/:userId (DELETE)', () => {
+      it('should delete a document by id', async () => {
+        const response = await request(httpServer)
+          .delete('/documents/1/user/2')
+          .expect(200);
+
+        expect(response.body).not.toHaveProperty('id');
+        expect(response.body).not.toHaveProperty('url');
+        expect(response.body).not.toHaveProperty('src');
+        expect(response.body).not.toHaveProperty('title');
+        expect(response.body).not.toHaveProperty('description');
         expect(response.body).not.toHaveProperty('createdAt');
         expect(response.body).not.toHaveProperty('updatedAt');
       });
