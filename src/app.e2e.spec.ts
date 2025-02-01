@@ -6,6 +6,7 @@ import { Role } from './modules/user/domain/entity/user.entity';
 import * as request from 'supertest';
 import { Server } from 'http';
 import { CreateDocumentDto } from './modules/document/domain/dto/create-document.dto';
+import { CreateCarDto } from './modules/car/domain/dto/create-car.dto';
 
 describe('App', () => {
   let app: INestApplication;
@@ -20,6 +21,15 @@ describe('App', () => {
     country: 'test country',
     role: Role.USER,
     documents: [],
+  };
+
+  const newFirstCar: CreateCarDto = {
+    brand: 'test brand',
+    model: 'test model',
+    color: 'test color',
+    passengers: 4,
+    ac: true,
+    pricePerDay: 100,
   };
 
   beforeAll(async () => {
@@ -366,6 +376,33 @@ describe('App', () => {
 
       it('should not delete a user by id that does not exist', async () => {
         await request(httpServer).delete('/users/999').expect(404);
+      });
+    });
+  });
+
+  describe('Car', () => {
+    describe('/car (POST)', () => {
+      it('should create a car', async () => {
+        const response = await request(httpServer)
+          .post('/car')
+          .send(newFirstCar)
+          .expect(201);
+
+        expect(response.body).toHaveProperty('id');
+        expect(response.body).toHaveProperty('brand', newFirstCar.brand);
+        expect(response.body).toHaveProperty('model', newFirstCar.model);
+        expect(response.body).toHaveProperty('color', newFirstCar.color);
+        expect(response.body).toHaveProperty(
+          'passengers',
+          newFirstCar.passengers,
+        );
+        expect(response.body).toHaveProperty('ac', newFirstCar.ac);
+        expect(response.body).toHaveProperty(
+          'pricePerDay',
+          newFirstCar.pricePerDay,
+        );
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
       });
     });
   });
