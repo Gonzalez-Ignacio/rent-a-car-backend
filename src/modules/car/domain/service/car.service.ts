@@ -3,6 +3,7 @@ import { CarRepository } from '../../infraestructure/car.typeorm.repository';
 import { CreateCarDto } from '../dto/create-car.dto';
 import { CarMapper } from '../mapper/car.mapper';
 import { Car } from '../entity/car.entity';
+import { UpdateCarDto } from '../dto/update-car.dto';
 
 @Injectable()
 export class CarService {
@@ -48,7 +49,7 @@ export class CarService {
     return this.carRepository.save(newCar);
   }
 
-  async update(id: number, car: CreateCarDto) {
+  async update(id: number, car: UpdateCarDto) {
     const carFound = await this.carRepository.findById(id);
 
     if (!carFound) {
