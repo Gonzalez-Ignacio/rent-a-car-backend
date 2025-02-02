@@ -25,4 +25,8 @@ export class CarRepository implements ICarRepository {
   async findByBrandAndModel(brand: string, model: string): Promise<Car | null> {
     return await this.carRepository.findOne({ where: { brand, model } });
   }
+
+  async update(car: Car): Promise<void> {
+    await this.carRepository.update(car.id, car);
+  }
 }

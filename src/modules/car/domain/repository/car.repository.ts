@@ -5,4 +5,5 @@ export interface ICarRepository {
   findById(id: number): Promise<Car | null>;
   save(car: Car): Promise<Car>;
   findByBrandAndModel(brand: string, model: string): Promise<Car | null>;
+  update(car: Car): Promise<void>;
 }

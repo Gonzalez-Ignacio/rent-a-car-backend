@@ -47,4 +47,16 @@ export class CarService {
 
     return this.carRepository.save(newCar);
   }
+
+  async update(id: number, car: CreateCarDto) {
+    const carFound = await this.carRepository.findById(id);
+
+    if (!carFound) {
+      throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
+    }
+
+    const updateCar = CarMapper.dtoToUpdateEntity(car, carFound);
+
+    return this.carRepository.save(updateCar);
+  }
 }
