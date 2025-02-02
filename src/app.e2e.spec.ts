@@ -404,6 +404,27 @@ describe('App', () => {
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
       });
+
+      it('should not create a car with empty fields ', async () => {
+        const response = await request(httpServer)
+          .post('/car')
+          .send({})
+          .expect(400);
+
+        expect(response.body).toHaveProperty('message');
+      });
+
+      it('should not create a car with existing brand and model', async () => {
+        const newSecondCar: CreateCarDto = {
+          brand: 'test brand',
+          model: 'test model',
+          color: 'test color',
+          passengers: 4,
+          ac: true,
+          pricePerDay: 100,
+        };
+        await request(httpServer).post('/car').send(newSecondCar).expect(409);
+      });
     });
   });
 });
