@@ -426,5 +426,37 @@ describe('App', () => {
         await request(httpServer).post('/car').send(newSecondCar).expect(409);
       });
     });
+
+    describe('/car (GET)', () => {
+      it('should get all cars', async () => {
+        const response = await request(httpServer).get('/car').expect(200);
+
+        expect(response.body).toBeInstanceOf(Array);
+      });
+
+      it('should get a car by id', async () => {
+        const response = await request(httpServer).get('/car/1').expect(200);
+
+        expect(response.body).toHaveProperty('id', 1);
+        expect(response.body).toHaveProperty('brand', newFirstCar.brand);
+        expect(response.body).toHaveProperty('model', newFirstCar.model);
+        expect(response.body).toHaveProperty('color', newFirstCar.color);
+        expect(response.body).toHaveProperty(
+          'passengers',
+          newFirstCar.passengers,
+        );
+        expect(response.body).toHaveProperty('ac', newFirstCar.ac);
+        expect(response.body).toHaveProperty(
+          'pricePerDay',
+          newFirstCar.pricePerDay,
+        );
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not get a car by id that does not exist', async () => {
+        await request(httpServer).get('/car/999').expect(404);
+      });
+    });
   });
 });
