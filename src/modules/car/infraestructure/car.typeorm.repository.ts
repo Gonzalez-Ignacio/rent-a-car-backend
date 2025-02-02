@@ -10,6 +10,14 @@ export class CarRepository implements ICarRepository {
     @InjectRepository(Car) private readonly carRepository: Repository<Car>,
   ) {}
 
+  async findAll(): Promise<Car[]> {
+    return await this.carRepository.find();
+  }
+
+  async findById(id: number): Promise<Car | null> {
+    return await this.carRepository.findOne({ where: { id } });
+  }
+
   async save(car: Car): Promise<Car> {
     return await this.carRepository.save(car);
   }
