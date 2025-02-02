@@ -1,4 +1,5 @@
 import { CreateCarDto } from '../dto/create-car.dto';
+import { UpdateCarDto } from '../dto/update-car.dto';
 import { Car } from '../entity/car.entity';
 
 export class CarMapper {
@@ -20,5 +21,12 @@ export class CarMapper {
     newCar.pricePerDay = car.pricePerDay;
 
     return newCar;
+  }
+
+  static dtoToUpdateEntity(carUpdate: UpdateCarDto, carExisting: Car) {
+    return {
+      ...carExisting,
+      ...carUpdate,
+    };
   }
 }

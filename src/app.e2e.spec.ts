@@ -458,5 +458,45 @@ describe('App', () => {
         await request(httpServer).get('/car/999').expect(404);
       });
     });
+
+    describe('/car (PATCH)', () => {
+      it('should update a car by id', async () => {
+        const response = await request(httpServer)
+          .patch('/car/1')
+          .send({
+            brand: 'test update brand',
+            model: 'test update model',
+            color: 'test update color',
+            passengers: 4,
+            ac: true,
+            pricePerDay: 100,
+          })
+          .expect(200);
+
+        expect(response.body).toHaveProperty('id', 1);
+        expect(response.body).toHaveProperty('brand', 'test update brand');
+        expect(response.body).toHaveProperty('model', 'test update model');
+        expect(response.body).toHaveProperty('color', 'test update color');
+        expect(response.body).toHaveProperty('passengers', 4);
+        expect(response.body).toHaveProperty('ac', true);
+        expect(response.body).toHaveProperty('pricePerDay', 100);
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not update a car by id that does not exist', async () => {
+        await request(httpServer)
+          .patch('/car/999')
+          .send({
+            brand: 'test update brand',
+            model: 'test update model',
+            color: 'test update color',
+            passengers: 4,
+            ac: true,
+            pricePerDay: 100,
+          })
+          .expect(404);
+      });
+    });
   });
 });
