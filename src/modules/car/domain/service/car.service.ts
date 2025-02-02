@@ -59,4 +59,14 @@ export class CarService {
 
     return this.carRepository.save(updateCar);
   }
+
+  async delete(id: number) {
+    const carFound = await this.carRepository.findById(id);
+
+    if (!carFound) {
+      throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
+    }
+
+    return this.carRepository.delete(id);
+  }
 }

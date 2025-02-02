@@ -498,5 +498,25 @@ describe('App', () => {
           .expect(404);
       });
     });
+
+    describe('/car (DELETE)', () => {
+      it('should delete a car by id', async () => {
+        const response = await request(httpServer).delete('/car/1').expect(200);
+
+        expect(response.body).not.toHaveProperty('id');
+        expect(response.body).not.toHaveProperty('brand');
+        expect(response.body).not.toHaveProperty('model');
+        expect(response.body).not.toHaveProperty('color');
+        expect(response.body).not.toHaveProperty('passengers');
+        expect(response.body).not.toHaveProperty('ac');
+        expect(response.body).not.toHaveProperty('pricePerDay');
+        expect(response.body).not.toHaveProperty('createdAt');
+        expect(response.body).not.toHaveProperty('updatedAt');
+      });
+
+      it('should not delete a car by id that does not exist', async () => {
+        await request(httpServer).delete('/car/999').expect(404);
+      });
+    });
   });
 });

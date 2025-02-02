@@ -29,4 +29,8 @@ export class CarRepository implements ICarRepository {
   async update(car: Car): Promise<void> {
     await this.carRepository.update(car.id, car);
   }
+
+  async delete(id: number): Promise<void> {
+    await this.carRepository.delete(id);
+  }
 }
