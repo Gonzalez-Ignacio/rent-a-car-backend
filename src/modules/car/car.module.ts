@@ -9,5 +9,6 @@ import { Car } from './domain/entity/car.entity';
   imports: [TypeOrmModule.forFeature([Car])],
   providers: [CarService, CarRepository],
   controllers: [CarController],
+  exports: [CarService],
 })
 export class CarModule {}

@@ -7,6 +7,8 @@ import * as request from 'supertest';
 import { Server } from 'http';
 import { CreateDocumentDto } from './modules/document/domain/dto/create-document.dto';
 import { CreateCarDto } from './modules/car/domain/dto/create-car.dto';
+import { CreatePictureDto } from './modules/picture/domain/dto/create-picture.dto';
+import { CarPicture } from './modules/picture/domain/entity/picture.entity';
 
 describe('App', () => {
   let app: INestApplication;
@@ -30,6 +32,24 @@ describe('App', () => {
     passengers: 4,
     ac: true,
     pricePerDay: 100,
+  };
+
+  const newSecondCar: CreateCarDto = {
+    brand: 'test brand',
+    model: 'test model',
+    color: 'test color',
+    passengers: 4,
+    ac: true,
+    pricePerDay: 100,
+  };
+
+  const newFirstPicture: CreatePictureDto = {
+    carId: 1,
+    src: 'test src',
+    title: 'test title',
+    description: 'test description',
+    type: CarPicture.FRONT,
+    date: new Date(),
   };
 
   beforeAll(async () => {
@@ -415,14 +435,6 @@ describe('App', () => {
       });
 
       it('should not create a car with existing brand and model', async () => {
-        const newSecondCar: CreateCarDto = {
-          brand: 'test brand',
-          model: 'test model',
-          color: 'test color',
-          passengers: 4,
-          ac: true,
-          pricePerDay: 100,
-        };
         await request(httpServer).post('/car').send(newSecondCar).expect(409);
       });
     });
@@ -501,7 +513,8 @@ describe('App', () => {
 
     describe('/car (DELETE)', () => {
       it('should delete a car by id', async () => {
-        const response = await request(httpServer).delete('/car/1').expect(200);
+        await request(httpServer).post('/car').send(newSecondCar).expect(201);
+        const response = await request(httpServer).delete('/car/2').expect(200);
 
         expect(response.body).not.toHaveProperty('id');
         expect(response.body).not.toHaveProperty('brand');
@@ -516,6 +529,29 @@ describe('App', () => {
 
       it('should not delete a car by id that does not exist', async () => {
         await request(httpServer).delete('/car/999').expect(404);
+      });
+    });
+  });
+
+  describe('Picture', () => {
+    describe('/picture (POST)', () => {
+      it('should create a picture', async () => {
+        const response = await request(httpServer)
+          .post('/picture')
+          .send(newFirstPicture)
+          .expect(201);
+
+        expect(response.body).toHaveProperty('id');
+        expect(response.body).toHaveProperty('src', newFirstPicture.src);
+        expect(response.body).toHaveProperty('title', newFirstPicture.title);
+        expect(response.body).toHaveProperty(
+          'description',
+          newFirstPicture.description,
+        );
+        expect(response.body).toHaveProperty('type', newFirstPicture.type);
+        expect(response.body).toHaveProperty('date');
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
       });
     });
   });

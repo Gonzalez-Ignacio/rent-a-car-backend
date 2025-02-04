@@ -1,7 +1,9 @@
+import { Picture } from '../../../picture/domain/entity/picture.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -17,8 +19,8 @@ export class Car {
   @Column()
   model: string;
 
-  // @OneToMany(() => Picture, (picture) => picture.car)
-  // img?: Picture[];
+  @OneToMany(() => Picture, (picture) => picture.car)
+  img?: Picture[];
 
   @Column()
   color: string;
