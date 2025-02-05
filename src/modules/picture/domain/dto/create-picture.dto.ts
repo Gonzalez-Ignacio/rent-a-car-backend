@@ -1,10 +1,10 @@
-import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { CarPicture } from '../entity/picture.entity';
 
 export class CreatePictureDto {
   @IsNotEmpty()
-  @IsInt()
-  carId: number;
+  @IsUUID()
+  carUuid: string;
 
   @IsNotEmpty()
   @IsString()
