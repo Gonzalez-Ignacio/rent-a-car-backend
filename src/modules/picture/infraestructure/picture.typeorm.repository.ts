@@ -15,8 +15,8 @@ export class PictureRepository implements IPictureRepository {
     return await this.pictureRepository.save(picture);
   }
 
-  async findById(id: number): Promise<Picture | null> {
-    return await this.pictureRepository.findOne({ where: { id } });
+  async findById(uuid: string): Promise<Picture | null> {
+    return await this.pictureRepository.findOne({ where: { uuid } });
   }
 
   async findBySrc(src: string): Promise<Picture | null> {

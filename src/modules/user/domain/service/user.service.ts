@@ -13,8 +13,8 @@ export class UserService {
     return this.userRepository.findAll();
   }
 
-  async getUser(id: number): Promise<User> {
-    const userFound = await this.userRepository.findById(id);
+  async getUser(uuid: string): Promise<User> {
+    const userFound = await this.userRepository.findByUuid(uuid);
     if (!userFound) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -22,10 +22,6 @@ export class UserService {
   }
 
   async createUser(user: CreateUserDto) {
-    if (!user.firstName || !user.lastName || !user.email) {
-      throw new HttpException('Fields cannot be empty', HttpStatus.BAD_REQUEST);
-    }
-
     const newUser = UserMapper.dtoToEntity(user);
 
     const userFound = await this.userRepository.findByEmail(newUser.email);
@@ -37,8 +33,8 @@ export class UserService {
     return this.userRepository.save(newUser);
   }
 
-  async updateUser(id: number, user: UpdateUserDto) {
-    const userFound = await this.userRepository.findById(id);
+  async update(uuid: string, user: UpdateUserDto) {
+    const userFound = await this.userRepository.findByUuid(uuid);
 
     if (!userFound) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -49,13 +45,13 @@ export class UserService {
     return this.userRepository.save(updateUser);
   }
 
-  async deleteUser(id: number) {
-    const resultDelete = await this.userRepository.findById(id);
+  async delete(uuid: string) {
+    const resultDelete = await this.userRepository.findByUuid(uuid);
 
     if (!resultDelete) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    await this.userRepository.delete(id);
+    await this.userRepository.delete(uuid);
   }
 }

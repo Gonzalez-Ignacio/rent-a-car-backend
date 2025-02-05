@@ -17,8 +17,8 @@ export enum Role {
   name: 'user_db',
 })
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  uuid: string;
 
   @Column()
   firstName: string;

@@ -10,8 +10,8 @@ import {
 
 @Entity('car')
 export class Car {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  uuid: string;
 
   @Column()
   brand: string;

@@ -11,11 +11,11 @@ export class CarRepository implements ICarRepository {
   ) {}
 
   async findAll(): Promise<Car[]> {
-    return await this.carRepository.find();
+    return await this.carRepository.find({ relations: ['img'] });
   }
 
-  async findById(id: number): Promise<Car | null> {
-    return await this.carRepository.findOne({ where: { id } });
+  async findByUuid(uuid: string): Promise<Car | null> {
+    return await this.carRepository.findOne({ where: { uuid } });
   }
 
   async save(car: Car): Promise<Car> {
@@ -27,10 +27,10 @@ export class CarRepository implements ICarRepository {
   }
 
   async update(car: Car): Promise<void> {
-    await this.carRepository.update(car.id, car);
+    await this.carRepository.update(car.uuid, car);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.carRepository.delete(id);
+  async delete(uuid: string): Promise<void> {
+    await this.carRepository.delete(uuid);
   }
 }

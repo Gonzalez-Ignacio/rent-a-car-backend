@@ -13,20 +13,20 @@ export class DocumentService {
     private readonly documentRepository: DocumentRepository,
   ) {}
 
-  async getDocuments(userId: number): Promise<Document[]> {
-    const userFound = await this.userService.getUser(userId);
+  async getDocuments(userUuid: string): Promise<Document[]> {
+    const userFound = await this.userService.getUser(userUuid);
 
     if (!userFound) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    return this.documentRepository.findAllDocumentsByUser(userId);
+    return this.documentRepository.findAllDocumentsByUser(userUuid);
   }
 
-  async getDocument(userId: number, documentId: number): Promise<Document> {
+  async getDocument(userUuid: string, documentUuid: string): Promise<Document> {
     const documentFound = await this.documentRepository.findOneDocument(
-      userId,
-      documentId,
+      userUuid,
+      documentUuid,
     );
 
     if (!documentFound) {
@@ -39,18 +39,9 @@ export class DocumentService {
     return documentFound;
   }
 
-  async createDocument(userId: number, document: CreateDocumentDto) {
-    if (
-      !document.url ||
-      !document.src ||
-      !document.title ||
-      !document.description
-    ) {
-      throw new HttpException('Fields cannot be empty', HttpStatus.BAD_REQUEST);
-    }
-
+  async createDocument(userUuid: string, document: CreateDocumentDto) {
     const newDocument = DocumentMapper.dtoToEntity(document);
-    newDocument.user = await this.userService.getUser(userId);
+    newDocument.user = await this.userService.getUser(userUuid);
 
     const documentFoundByUrl = await this.documentRepository.findByUrl(
       newDocument.url,
@@ -78,13 +69,13 @@ export class DocumentService {
   }
 
   async update(
-    userId: number,
-    documentId: number,
+    userUuid: string,
+    documentUuid: string,
     documentUpdate: UpdateDocumentDto,
-  ) {
+  ): Promise<Document> {
     const documentFound = await this.documentRepository.findOneDocument(
-      userId,
-      documentId,
+      userUuid,
+      documentUuid,
     );
 
     if (!documentFound) {
@@ -99,16 +90,16 @@ export class DocumentService {
     return this.documentRepository.save(updateDocument);
   }
 
-  async delete(userId: number, documentId: number): Promise<void> {
+  async delete(userUuid: string, documentUuid: string): Promise<void> {
     const resultDelete = await this.documentRepository.findOneDocument(
-      userId,
-      documentId,
+      userUuid,
+      documentUuid,
     );
 
     if (!resultDelete) {
       throw new HttpException('Document not found', HttpStatus.NOT_FOUND);
     }
 
-    await this.documentRepository.delete(documentId);
+    await this.documentRepository.delete(documentUuid);
   }
 }

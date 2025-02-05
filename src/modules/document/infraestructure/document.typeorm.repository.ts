@@ -11,9 +11,9 @@ export class DocumentRepository implements IDocumentRepository {
     private readonly documentRepository: Repository<Document>,
   ) {}
 
-  async findAllDocumentsByUser(userId: number): Promise<Document[]> {
+  async findAllDocumentsByUser(userUuid: string): Promise<Document[]> {
     return await this.documentRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { uuid: userUuid } },
     });
   }
 
@@ -30,19 +30,19 @@ export class DocumentRepository implements IDocumentRepository {
   }
 
   async findOneDocument(
-    userId: number,
-    documentId: number,
+    userUuid: string,
+    documentUuid: string,
   ): Promise<Document | null> {
     return await this.documentRepository.findOne({
-      where: { user: { id: userId }, id: documentId },
+      where: { user: { uuid: userUuid }, uuid: documentUuid },
     });
   }
 
   async update(document: Document): Promise<void> {
-    await this.documentRepository.update(document.id, document);
+    await this.documentRepository.update(document.uuid, document);
   }
 
-  async delete(documentId: number): Promise<void> {
+  async delete(documentId: string): Promise<void> {
     await this.documentRepository.delete(documentId);
   }
 }

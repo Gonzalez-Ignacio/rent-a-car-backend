@@ -1,6 +1,8 @@
 import { CreateDocumentDto } from '../dto/create-document.dto';
+import { DocumentResponseDto } from '../dto/document.response.dto';
 import { UpdateDocumentDto } from '../dto/update-document.dto';
 import { Document } from '../entity/document.entity';
+import { UserMapper } from '../../../user/domain/mapper/user.mapper';
 
 export class DocumentMapper {
   static dtoToEntity(document: CreateDocumentDto) {
@@ -20,5 +22,16 @@ export class DocumentMapper {
       ...documentExisting,
       ...documentUpdate,
     };
+  }
+
+  static entityToDto(document: Document) {
+    const documentResponse = new DocumentResponseDto();
+    documentResponse.uuid = document.uuid;
+    documentResponse.url = document.url;
+    documentResponse.src = document.src;
+    documentResponse.title = document.title;
+    documentResponse.description = document.description;
+    documentResponse.user = UserMapper.entityToDto(document.user);
+    return documentResponse;
   }
 }
