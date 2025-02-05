@@ -11,9 +11,9 @@ export class PictureService {
     private readonly pictureRepository: PictureRepository,
   ) {}
 
-  async createPicture(carId: number, picture: CreatePictureDto) {
+  async createPicture(carUuid: string, picture: CreatePictureDto) {
     const newPicture = PictureMapper.dtoToEntity(picture);
-    newPicture.car = await this.carService.getCarById(carId);
+    newPicture.car = await this.carService.getCarById(carUuid);
 
     const pictureFoundBySrc = await this.pictureRepository.findBySrc(
       picture.src,

@@ -4,53 +4,56 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
 import { CreateDocumentDto } from '../domain/dto/create-document.dto';
 import { DocumentService } from '../domain/service/document.service';
-import { Document } from '../domain/entity/document.entity';
 import { UpdateDocumentDto } from '../domain/dto/update-document.dto';
+import { DocumentResponseDto } from '../domain/dto/document.response.dto';
 
 @Controller('documents')
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
-  @Get('user/:userId')
+  @Get('user/:userUuid')
   getDocuments(
-    @Param('userId', ParseIntPipe) userId: number,
-  ): Promise<Document[]> {
-    return this.documentService.getDocuments(userId);
+    @Param('userUuid', ParseUUIDPipe) userUuid: string,
+  ): Promise<DocumentResponseDto[]> {
+    return this.documentService.getDocuments(userUuid);
   }
 
-  @Get(':documentId/user/:userId')
+  @Get(':documentUuid/user/:userUuid')
   getDocument(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('documentId', ParseIntPipe) documentId: number,
-  ): Promise<Document> {
-    return this.documentService.getDocument(userId, documentId);
+    @Param('userUuid', ParseUUIDPipe) userUuid: string,
+    @Param('documentUuid', ParseUUIDPipe) documentUuid: string,
+  ): Promise<DocumentResponseDto> {
+    return this.documentService.getDocument(userUuid, documentUuid);
   }
 
   @Post()
-  createPost(@Body() newDocument: CreateDocumentDto) {
-    return this.documentService.createDocument(newDocument.userId, newDocument);
+  createDocument(@Body() newDocument: CreateDocumentDto) {
+    return this.documentService.createDocument(
+      newDocument.userUuid,
+      newDocument,
+    );
   }
 
-  @Patch(':documentId/user/:userId')
+  @Patch(':documentUuid/user/:userUuid')
   updateDocument(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('documentId', ParseIntPipe) documentId: number,
+    @Param('userUuid', ParseUUIDPipe) userUuid: string,
+    @Param('documentUuid', ParseUUIDPipe) documentUuid: string,
     @Body() updateDocument: UpdateDocumentDto,
-  ): Promise<Document> {
-    return this.documentService.update(userId, documentId, updateDocument);
+  ): Promise<DocumentResponseDto> {
+    return this.documentService.update(userUuid, documentUuid, updateDocument);
   }
 
-  @Delete(':documentId/user/:userId')
+  @Delete(':documentUuid/user/:userUuid')
   deleteDocument(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Param('documentId', ParseIntPipe) documentId: number,
+    @Param('userUuid', ParseUUIDPipe) userUuid: string,
+    @Param('documentUuid', ParseUUIDPipe) documentUuid: string,
   ) {
-    return this.documentService.delete(userId, documentId);
+    return this.documentService.delete(userUuid, documentUuid);
   }
 }

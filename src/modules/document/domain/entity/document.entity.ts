@@ -11,8 +11,8 @@ import {
 
 @Entity('document')
 export class Document {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  uuid: string;
 
   @Column({ unique: true })
   url: string;
@@ -33,6 +33,6 @@ export class Document {
   updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.documents)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'userUuid' })
   user: User;
 }

@@ -8,9 +8,8 @@ export class PictureController {
 
   @Post()
   async createPicture(@Body() newPicture: CreatePictureDto) {
-    console.log(newPicture);
     return await this.pictureService.createPicture(
-      newPicture.carId,
+      newPicture.carUuid,
       newPicture,
     );
   }

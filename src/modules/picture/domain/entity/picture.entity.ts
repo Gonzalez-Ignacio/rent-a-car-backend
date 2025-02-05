@@ -26,21 +26,21 @@ function getPictureOptions(): ColumnOptions {
 
 @Entity('picture')
 export class Picture {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  uuid: string;
 
   @ManyToOne(() => Car, (car) => car.img)
-  @JoinColumn({ name: 'carId' })
+  @JoinColumn({ name: 'carUuid' })
   car: Car;
 
   @Column({ unique: true })
   src: string;
 
   @Column()
-  description: string;
+  title: string;
 
   @Column()
-  title: string;
+  description: string;
 
   @Column(getPictureOptions())
   type: CarPicture;

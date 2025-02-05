@@ -13,8 +13,8 @@ export class CarService {
     return await this.carRepository.findAll();
   }
 
-  async getCarById(id: number): Promise<Car> {
-    const carFound = await this.carRepository.findById(id);
+  async getCarById(uuid: string): Promise<Car> {
+    const carFound = await this.carRepository.findByUuid(uuid);
 
     if (!carFound) {
       throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
@@ -24,17 +24,6 @@ export class CarService {
   }
 
   async createCar(car: CreateCarDto) {
-    if (
-      !car.brand ||
-      !car.model ||
-      !car.color ||
-      !car.passengers ||
-      !car.ac ||
-      !car.pricePerDay
-    ) {
-      throw new HttpException('Fields cannot be empty', HttpStatus.BAD_REQUEST);
-    }
-
     const newCar = CarMapper.dtoToEntity(car);
 
     const carFound = await this.carRepository.findByBrandAndModel(
@@ -49,8 +38,8 @@ export class CarService {
     return this.carRepository.save(newCar);
   }
 
-  async update(id: number, car: UpdateCarDto) {
-    const carFound = await this.carRepository.findById(id);
+  async update(uuid: string, car: UpdateCarDto) {
+    const carFound = await this.carRepository.findByUuid(uuid);
 
     if (!carFound) {
       throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
@@ -61,13 +50,13 @@ export class CarService {
     return this.carRepository.save(updateCar);
   }
 
-  async delete(id: number) {
-    const carFound = await this.carRepository.findById(id);
+  async delete(uuid: string) {
+    const carFound = await this.carRepository.findByUuid(uuid);
 
     if (!carFound) {
       throw new HttpException('Car not found', HttpStatus.NOT_FOUND);
     }
 
-    return this.carRepository.delete(id);
+    return this.carRepository.delete(uuid);
   }
 }

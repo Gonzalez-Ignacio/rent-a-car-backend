@@ -22,22 +22,22 @@ export class UserRepository implements IUserRepository {
     return await this.userRepository.findOne({ where: { email } });
   }
 
-  async findById(id: number) {
-    return await this.userRepository.findOne({ where: { id } });
+  async findByUuid(uuid: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { uuid } });
   }
 
-  async findDocumentsByUser(userId: number): Promise<User | null> {
+  async findDocumentsByUser(userUuid: string): Promise<User | null> {
     return await this.userRepository.findOne({
-      where: { id: userId },
+      where: { uuid: userUuid },
       relations: ['documents'],
     });
   }
 
   async update(user: User): Promise<void> {
-    await this.userRepository.update(user.id, user);
+    await this.userRepository.update(user.uuid, user);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.userRepository.delete(id);
+  async delete(uuid: string): Promise<void> {
+    await this.userRepository.delete(uuid);
   }
 }
