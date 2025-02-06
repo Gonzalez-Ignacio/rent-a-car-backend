@@ -4,6 +4,7 @@ import { PictureRepository } from '../../infraestructure/picture.typeorm.reposit
 import { CreatePictureDto } from '../dto/create-picture.dto';
 import { PictureMapper } from '../mapper/picture.mapper';
 import { Picture } from '../entity/picture.entity';
+import { UpdatePictureDto } from '../dto/update-picture.dto';
 
 @Injectable()
 export class PictureService {
@@ -51,5 +52,27 @@ export class PictureService {
     }
 
     return this.pictureRepository.save(newPicture);
+  }
+
+  async update(
+    carUuid: string,
+    pictureUuid: string,
+    picture: UpdatePictureDto,
+  ): Promise<Picture> {
+    const pictureFound = await this.pictureRepository.findOnePicture(
+      carUuid,
+      pictureUuid,
+    );
+
+    if (!pictureFound) {
+      throw new HttpException('Picture or Car not found', HttpStatus.NOT_FOUND);
+    }
+
+    const updatePicture = PictureMapper.dtoToUpdateEntity(
+      picture,
+      pictureFound,
+    );
+
+    return this.pictureRepository.save(updatePicture);
   }
 }

@@ -881,6 +881,73 @@ describe('App', () => {
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
       });
+
+      it('should not get a picture by id that does not exist', async () => {
+        await request(httpServer)
+          .get('/picture/50dfec6f-4068-40f9-a889-69033f3bd547')
+          .expect(404);
+      });
+    });
+
+    describe('/picture/:pictureUuid/car/:carUuid (Patch)', () => {
+      it('should update a picture by id', async () => {
+        // new Car
+        const newCarForPicture4: CreateCarDto = {
+          brand: 'test brand newCarForPicture4',
+          model: 'test model newCarForPicture4',
+          color: 'test color newCarForPicture4',
+          passengers: 4,
+          ac: false,
+          pricePerDay: 4,
+        };
+        const createCarForPicture4 = await request(httpServer)
+          .post('/cars')
+          .send(newCarForPicture4);
+        const carUUIDForPicture4 = createCarForPicture4.body.uuid as string;
+
+        // Create Picture 4
+        const newFourthPicture: CreatePictureDto = {
+          carUuid: carUUIDForPicture4,
+          src: 'test src 4',
+          title: 'test title 4',
+          description: 'test description 4',
+          type: CarPicture.FRONT,
+          date: new Date(),
+        };
+        const createPictureUUIDFourth = await request(httpServer)
+          .post('/picture')
+          .send(newFourthPicture);
+        const pictureUUIDFourth = createPictureUUIDFourth.body.uuid as string;
+
+        const response = await request(httpServer)
+          .patch(`/picture/${pictureUUIDFourth}/car/${carUUIDForPicture4}`)
+          .send({
+            src: 'test update src 4',
+          })
+          .expect(200);
+        expect(response.body).toHaveProperty('uuid');
+        expect(response.body).toHaveProperty('src', 'test update src 4');
+        expect(response.body).toHaveProperty('title', newFourthPicture.title);
+        expect(response.body).toHaveProperty(
+          'description',
+          newFourthPicture.description,
+        );
+        expect(response.body).toHaveProperty('type', newFourthPicture.type);
+        expect(response.body).toHaveProperty('date');
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+
+      it('should not update a picture by id that does not exist', async () => {
+        await request(httpServer)
+          .patch(
+            '/picture/50dfec6f-4068-40f9-a889-69033f3bd547/car/50dfec6f-4068-40f9-a889-69033f3bd547',
+          )
+          .send({
+            src: 'test update src 4',
+          })
+          .expect(404);
+      });
     });
   });
 });
