@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -46,5 +47,13 @@ export class PictureController {
     @Body() updatePicture: UpdatePictureDto,
   ): Promise<PictureResponseDto> {
     return this.pictureService.update(carUuid, pictureUuid, updatePicture);
+  }
+
+  @Delete(':pictureUuid/car/:carUuid')
+  deletePicture(
+    @Param('carUuid', ParseUUIDPipe) carUuid: string,
+    @Param('pictureUuid', ParseUUIDPipe) pictureUuid: string,
+  ): Promise<void> {
+    return this.pictureService.delete(carUuid, pictureUuid);
   }
 }

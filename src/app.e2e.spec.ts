@@ -949,5 +949,57 @@ describe('App', () => {
           .expect(404);
       });
     });
+
+    describe('/picture/:pictureUuid/car/:carUuid (Delete)', () => {
+      it('should delete a picture by id', async () => {
+        // new Car
+        const newCarForPicture5: CreateCarDto = {
+          brand: 'test brand newCarForPicture5',
+          model: 'test model newCarForPicture5',
+          color: 'test color newCarForPicture5',
+          passengers: 4,
+          ac: false,
+          pricePerDay: 4,
+        };
+        const createCarForPicture5 = await request(httpServer)
+          .post('/cars')
+          .send(newCarForPicture5);
+        const carUUIDForPicture5 = createCarForPicture5.body.uuid as string;
+
+        // Create Picture 5
+        const newFifthPicture: CreatePictureDto = {
+          carUuid: carUUIDForPicture5,
+          src: 'test src 5',
+          title: 'test title 5',
+          description: 'test description 5',
+          type: CarPicture.FRONT,
+          date: new Date(),
+        };
+        const createPictureUUIDFifth = await request(httpServer)
+          .post('/picture')
+          .send(newFifthPicture);
+        const pictureUUIDFifth = createPictureUUIDFifth.body.uuid as string;
+
+        const response = await request(httpServer)
+          .delete(`/picture/${pictureUUIDFifth}/car/${carUUIDForPicture5}`)
+          .expect(200);
+        expect(response.body).not.toHaveProperty('uuid');
+        expect(response.body).not.toHaveProperty('src');
+        expect(response.body).not.toHaveProperty('title');
+        expect(response.body).not.toHaveProperty('description');
+        expect(response.body).not.toHaveProperty('type');
+        expect(response.body).not.toHaveProperty('date');
+        expect(response.body).not.toHaveProperty('createdAt');
+        expect(response.body).not.toHaveProperty('updatedAt');
+      });
+
+      it('should not delete a picture by id that does not exist', async () => {
+        await request(httpServer)
+          .delete(
+            '/picture/50dfec6f-4068-40f9-a889-69033f3bd547/car/50dfec6f-4068-40f9-a889-69033f3bd547',
+          )
+          .expect(404);
+      });
+    });
   });
 });
