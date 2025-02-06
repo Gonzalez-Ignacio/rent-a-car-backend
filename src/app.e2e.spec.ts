@@ -795,5 +795,92 @@ describe('App', () => {
         expect(response.body).toHaveProperty('updatedAt');
       });
     });
+
+    describe('/picture (GET)', () => {
+      it('should get all pictures by car', async () => {
+        // new Car
+        const newCarForPicture2: CreateCarDto = {
+          brand: 'test brand newCarForPicture2',
+          model: 'test model newCarForPicture2',
+          color: 'test color newCarForPicture2',
+          passengers: 4,
+          ac: false,
+          pricePerDay: 4,
+        };
+        const createCarForPicture2 = await request(httpServer)
+          .post('/cars')
+          .send(newCarForPicture2);
+        const carUUIDForPicture2 = createCarForPicture2.body.uuid as string;
+
+        // Create Picture 2
+        const newSecondPicture: CreatePictureDto = {
+          carUuid: carUUIDForPicture2,
+          src: 'test src 2',
+          title: 'test title 2',
+          description: 'test description 2',
+          type: CarPicture.FRONT,
+          date: new Date(),
+        };
+        await request(httpServer).post('/picture').send(newSecondPicture);
+
+        // Get all picture by car
+        const response = await request(httpServer)
+          .get(`/picture/car/${carUUIDForPicture2}`)
+          .expect(200);
+        expect(response.body).toBeInstanceOf(Array);
+      });
+
+      it('should not get all pictures by car that does not exist', async () => {
+        await request(httpServer)
+          .get('/picture/car/50dfec6f-4068-40f9-a889-69033f3bd547')
+          .expect(404);
+      });
+
+      it('should get a picture by id', async () => {
+        // new Car
+        const newCarForPicture3: CreateCarDto = {
+          brand: 'test brand newCarForPicture3',
+          model: 'test model newCarForPicture3',
+          color: 'test color newCarForPicture3',
+          passengers: 4,
+          ac: false,
+          pricePerDay: 4,
+        };
+        const createCarForPicture3 = await request(httpServer)
+          .post('/cars')
+          .send(newCarForPicture3);
+        const carUUIDForPicture3 = createCarForPicture3.body.uuid as string;
+
+        // Create Picture 3
+        const newThirdPicture: CreatePictureDto = {
+          carUuid: carUUIDForPicture3,
+          src: 'test src 3',
+          title: 'test title 3',
+          description: 'test description 3',
+          type: CarPicture.FRONT,
+          date: new Date(),
+        };
+        const createPictureUUIDThird = await request(httpServer)
+          .post('/picture')
+          .send(newThirdPicture);
+        const pictureUUIDThird = createPictureUUIDThird.body.uuid as string;
+
+        // Get a picture by id
+        const response = await request(httpServer)
+          .get(`/picture/${pictureUUIDThird}/car/${carUUIDForPicture3}`)
+          .expect(200);
+        expect(response.body).toHaveProperty('uuid');
+        expect(response.body).toHaveProperty('src', newThirdPicture.src);
+        expect(response.body).toHaveProperty('title', newThirdPicture.title);
+        expect(response.body).toHaveProperty(
+          'description',
+          newThirdPicture.description,
+        );
+        expect(response.body).toHaveProperty('type', newThirdPicture.type);
+        expect(response.body).toHaveProperty('date');
+        expect(response.body).toHaveProperty('createdAt');
+        expect(response.body).toHaveProperty('updatedAt');
+      });
+    });
   });
 });

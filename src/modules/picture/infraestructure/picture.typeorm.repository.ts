@@ -11,6 +11,12 @@ export class PictureRepository implements IPictureRepository {
     private readonly pictureRepository: Repository<Picture>,
   ) {}
 
+  async findAllPicturesByCar(carUuid: string): Promise<Picture[]> {
+    return await this.pictureRepository.find({
+      where: { car: { uuid: carUuid } },
+    });
+  }
+
   async save(picture: Picture): Promise<Picture> {
     return await this.pictureRepository.save(picture);
   }
@@ -21,5 +27,14 @@ export class PictureRepository implements IPictureRepository {
 
   async findBySrc(src: string): Promise<Picture | null> {
     return await this.pictureRepository.findOne({ where: { src } });
+  }
+
+  async findOnePicture(
+    carUuid: string,
+    pictureUuid: string,
+  ): Promise<Picture | null> {
+    return await this.pictureRepository.findOne({
+      where: { car: { uuid: carUuid }, uuid: pictureUuid },
+    });
   }
 }
