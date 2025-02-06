@@ -75,4 +75,17 @@ export class PictureService {
 
     return this.pictureRepository.save(updatePicture);
   }
+
+  async delete(carUuid: string, pictureUuid: string): Promise<void> {
+    const pictureFound = await this.pictureRepository.findOnePicture(
+      carUuid,
+      pictureUuid,
+    );
+
+    if (!pictureFound) {
+      throw new HttpException('Picture not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.pictureRepository.delete(pictureUuid);
+  }
 }

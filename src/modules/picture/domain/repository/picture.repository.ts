@@ -5,4 +5,5 @@ export interface IPictureRepository {
   save(picture: Picture): Promise<Picture>;
   findBySrc(src: string): Promise<Picture | null>;
   findOnePicture(carUuid: string, pictureUuid: string): Promise<Picture | null>;
+  delete(pictureUuid: string): Promise<void>;
 }

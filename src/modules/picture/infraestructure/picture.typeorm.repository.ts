@@ -37,4 +37,8 @@ export class PictureRepository implements IPictureRepository {
       where: { car: { uuid: carUuid }, uuid: pictureUuid },
     });
   }
+
+  async delete(pictureUuid: string): Promise<void> {
+    await this.pictureRepository.delete(pictureUuid);
+  }
 }
