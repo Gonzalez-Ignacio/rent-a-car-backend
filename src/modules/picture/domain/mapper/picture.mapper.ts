@@ -1,6 +1,7 @@
 import { CarMapper } from '../../../car/domain/mapper/car.mapper';
 import { CreatePictureDto } from '../dto/create-picture.dto';
 import { PictureResponseDto } from '../dto/picture.response.dto';
+import { UpdatePictureDto } from '../dto/update-picture.dto';
 import { Picture } from '../entity/picture.entity';
 
 export class PictureMapper {
@@ -12,6 +13,16 @@ export class PictureMapper {
     newPicture.type = picture.type;
     newPicture.date = picture.date;
     return newPicture;
+  }
+
+  static dtoToUpdateEntity(
+    pictureUpdate: UpdatePictureDto,
+    pictureExisting: Picture,
+  ) {
+    return {
+      ...pictureExisting,
+      ...pictureUpdate,
+    };
   }
 
   static entityToDto(picture: Picture) {
