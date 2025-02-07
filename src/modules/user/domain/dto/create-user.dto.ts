@@ -1,4 +1,4 @@
-import { Document } from 'src/modules/document/domain/entity/document.entity';
+import { Document } from '../../../document/domain/entity/document.entity';
 import { Role } from '../entity/user.entity';
 import {
   IsDateString,

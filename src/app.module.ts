@@ -7,6 +7,7 @@ import { DocumentModule } from './modules/document/document.module';
 import { getDbConfig } from './../db.config';
 import { CarModule } from './modules/car/car.module';
 import { PictureModule } from './modules/picture/picture.module';
+import { RentModule } from './modules/rent/rent.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PictureModule } from './modules/picture/picture.module';
     DocumentModule,
     CarModule,
     PictureModule,
+    RentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
