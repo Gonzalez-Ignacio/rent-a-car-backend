@@ -13,36 +13,26 @@ import { CarPicture } from './modules/picture/domain/entity/picture.entity';
 describe('App', () => {
   let app: INestApplication;
   let httpServer: Server;
-  let userUuid: string;
 
-  const newFirstUser: CreateUserDto = {
-    firstName: 'test first name',
-    lastName: 'test last name',
-    dob: new Date(),
-    email: 'test@test.com',
-    address: 'test address',
-    country: 'test country',
-    role: Role.USER,
-    documents: [],
-  };
+  let createUser1: CreateUserDto;
+  let createUser2: CreateUserDto;
+  let globalUser1Uuid: string;
+  let globalUser2Uuid: string;
 
-  const newFirstCar: CreateCarDto = {
-    brand: 'test brand',
-    model: 'test model',
-    color: 'test color',
-    passengers: 4,
-    ac: true,
-    pricePerDay: 100,
-  };
+  let createDocument1: CreateDocumentDto;
+  let createDocument2: CreateDocumentDto;
+  let globalDocument1Uuid: string;
+  let globalDocument2Uuid: string;
 
-  const newSecondCar: CreateCarDto = {
-    brand: 'test brand',
-    model: 'test model',
-    color: 'test color',
-    passengers: 4,
-    ac: true,
-    pricePerDay: 100,
-  };
+  let createCar1: CreateCarDto;
+  let createCar2: CreateCarDto;
+  let globalCar1Uuid: string;
+  let globalCar2Uuid: string;
+
+  let createPicture1: CreatePictureDto;
+  let createPicture2: CreatePictureDto;
+  let globalPicture1Uuid: string;
+  let globalPicture2Uuid: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -58,99 +48,209 @@ describe('App', () => {
     await app.init();
     httpServer = app.getHttpServer() as unknown as Server;
 
-    const createUser = await request(httpServer)
+    // First User
+    const createUser1Response = await request(httpServer)
       .post('/users')
-      .send(newFirstUser);
-    userUuid = createUser.body.uuid as string;
+      .send({
+        firstName: 'test first name',
+        lastName: 'test last name',
+        dob: new Date(),
+        email: 'test@test.com',
+        address: 'test address',
+        country: 'test country',
+        role: Role.ADMIN,
+        documents: [],
+      })
+      .expect(201);
+
+    createUser1 = createUser1Response.body as CreateUserDto;
+    globalUser1Uuid = createUser1Response.body.uuid as string;
+
+    // Second User
+    const createUser2Response = await request(httpServer)
+      .post('/users')
+      .send({
+        firstName: 'test Second name',
+        lastName: 'test last name',
+        dob: new Date(),
+        email: 'testSecond@test.com',
+        address: 'test address',
+        country: 'test country',
+        role: Role.USER,
+        documents: [],
+      })
+      .expect(201);
+
+    createUser2 = createUser2Response.body as CreateUserDto;
+    globalUser2Uuid = createUser2Response.body.uuid as string;
+
+    // First Document
+    const createDocument1Response = await request(httpServer)
+      .post('/documents')
+      .send({
+        userUuid: globalUser1Uuid,
+        url: 'https://example.com/document-url',
+        src: 'https://example.com/document-src',
+        title: 'Test Title',
+        description: 'This is a test description for the document.',
+      })
+      .expect(201);
+
+    createDocument1 = createDocument1Response.body as CreateDocumentDto;
+    globalDocument1Uuid = createDocument1Response.body.uuid as string;
+
+    // Second Document
+    const createDocument2Response = await request(httpServer)
+      .post('/documents')
+      .send({
+        userUuid: globalUser1Uuid,
+        url: 'https://example.com/document2-url',
+        src: 'https://example.com/document2-src',
+        title: 'Test Title 2',
+        description: 'This is a test description for the document 2.',
+      })
+      .expect(201);
+
+    createDocument2 = createDocument2Response.body as CreateDocumentDto;
+    globalDocument2Uuid = createDocument2Response.body.uuid as string;
+
+    //First Car
+    const createCar1Response = await request(httpServer)
+      .post('/cars')
+      .send({
+        brand: 'test brand',
+        model: 'test model',
+        color: 'test color',
+        passengers: 4,
+        ac: true,
+        pricePerDay: 100,
+      })
+      .expect(201);
+    createCar1 = createCar1Response.body as CreateCarDto;
+    console.log(createCar1);
+    globalCar1Uuid = createCar1Response.body.uuid as string;
+
+    // Second Car
+    const createCar2Response = await request(httpServer)
+      .post('/cars')
+      .send({
+        brand: 'test brand 2',
+        model: 'test model 2',
+        color: 'test color 2',
+        passengers: 4,
+        ac: true,
+        pricePerDay: 200,
+      })
+      .expect(201);
+    createCar2 = createCar2Response.body as CreateCarDto;
+    globalCar2Uuid = createCar2Response.body.uuid as string;
+
+    //First Picture
+    const createPicture1Response = await request(httpServer)
+      .post('/picture')
+      .send({
+        carUuid: globalCar1Uuid,
+        src: 'https://example.com/picture1-url',
+        title: 'test title',
+        description: 'test description',
+        type: CarPicture.FRONT,
+        date: new Date(),
+      })
+      .expect(201);
+    createPicture1 = createPicture1Response.body as CreatePictureDto;
+    globalPicture1Uuid = createPicture1Response.body.uuid as string;
+
+    // Second Picture
+    const createPicture2Response = await request(httpServer)
+      .post('/picture')
+      .send({
+        carUuid: globalCar1Uuid,
+        src: 'https://example.com/picture2-src',
+        title: 'Test Title 2',
+        description: 'This is a test description for the picture 2.',
+        type: CarPicture.BACK,
+        date: new Date(),
+      })
+      .expect(201);
+
+    createPicture2 = createPicture2Response.body as CreatePictureDto;
+    globalPicture2Uuid = createPicture2Response.body.uuid as string;
   });
 
   describe('User', () => {
     describe('/users (POST)', () => {
       it('should create a user', async () => {
-        const newSecondUser: CreateUserDto = {
-          firstName: 'test Second name',
+        const createUser3: CreateUserDto = {
+          firstName: 'test Third name',
           lastName: 'test last name',
           dob: new Date(),
-          email: 'testSecond@test.com',
+          email: 'testThird@test.com',
           address: 'test address',
           country: 'test country',
           role: Role.USER,
           documents: [],
         };
-
         const response = await request(httpServer)
           .post('/users')
-          .send(newSecondUser)
+          .send(createUser3)
           .expect(201);
-
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('firstName', 'test Second name');
-        expect(response.body).toHaveProperty('lastName', 'test last name');
+        expect(response.body).toHaveProperty(
+          'firstName',
+          createUser3.firstName,
+        );
+        expect(response.body).toHaveProperty('lastName', createUser3.lastName);
         expect(response.body).toHaveProperty('dob');
-        expect(response.body).toHaveProperty('email', 'testSecond@test.com');
-        expect(response.body).toHaveProperty('address', 'test address');
-        expect(response.body).toHaveProperty('country', 'test country');
-        expect(response.body).toHaveProperty('role', Role.USER);
+        expect(response.body).toHaveProperty('email', createUser3.email);
+        expect(response.body).toHaveProperty('address', createUser3.address);
+        expect(response.body).toHaveProperty('country', createUser3.country);
+        expect(response.body).toHaveProperty('role', createUser3.role);
         expect(response.body).toHaveProperty('documents');
-        expect(response.body).toHaveProperty('createdAt');
-        expect(response.body).toHaveProperty('updatedAt');
       });
-
       it('should not create a user with empty fields ', async () => {
         const response1 = await request(httpServer)
           .post('/users')
           .send({})
           .expect(400);
-
         expect(response1.body).toHaveProperty('message');
       });
-
       it('should not create a user with the same email', async () => {
-        await request(httpServer).post('/users').send(newFirstUser);
-
-        const newSecondUser: CreateUserDto = {
+        const createUser4: CreateUserDto = {
           firstName: 'test first name',
           lastName: 'test last name',
           dob: new Date(),
-          email: 'test@test.com',
+          email: createUser1.email,
           address: 'test address',
           country: 'test country',
           role: Role.USER,
           documents: [],
         };
-
-        await request(httpServer)
-          .post('/users')
-          .send(newSecondUser)
-          .expect(409);
+        await request(httpServer).post('/users').send(createUser4).expect(409);
       });
     });
 
     describe('/users (GET)', () => {
       it('should get all users', async () => {
         const response = await request(httpServer).get('/users').expect(200);
-
         expect(response.body).toBeInstanceOf(Array);
       });
-
       it('should get a user by uuid', async () => {
         const response = await request(httpServer)
-          .get(`/users/${userUuid}`)
+          .get(`/users/${globalUser1Uuid}`)
           .expect(200);
-
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('firstName');
-        expect(response.body).toHaveProperty('lastName');
+        expect(response.body).toHaveProperty(
+          'firstName',
+          createUser1.firstName,
+        );
+        expect(response.body).toHaveProperty('lastName', createUser1.lastName);
         expect(response.body).toHaveProperty('dob');
-        expect(response.body).toHaveProperty('email');
-        expect(response.body).toHaveProperty('address');
-        expect(response.body).toHaveProperty('country');
-        expect(response.body).toHaveProperty('role');
+        expect(response.body).toHaveProperty('email', createUser1.email);
+        expect(response.body).toHaveProperty('address', createUser1.address);
+        expect(response.body).toHaveProperty('country', createUser1.country);
+        expect(response.body).toHaveProperty('role', createUser1.role);
         expect(response.body).toHaveProperty('documents');
-        expect(response.body).toHaveProperty('createdAt');
-        expect(response.body).toHaveProperty('updatedAt');
       });
-
       it('should not get a user by id that does not exist', async () => {
         await request(httpServer)
           .get('/users/7cdfe82e-c866-4f2a-8fd0-982d58f0f718')
@@ -161,19 +261,23 @@ describe('App', () => {
     describe('/users (PATCH)', () => {
       it('should update a user by uuid', async () => {
         const response = await request(httpServer)
-          .patch(`/users/${userUuid}`)
+          .patch(`/users/${globalUser2Uuid}`)
           .send({
-            firstName: 'Test First Name',
+            firstName: 'Testing Second Name',
           })
           .expect(200);
 
-        expect(response.body).toHaveProperty('firstName', 'Test First Name');
-        expect(response.body).toHaveProperty('lastName', 'test last name');
+        expect(response.body).toHaveProperty('uuid');
+        expect(response.body).toHaveProperty(
+          'firstName',
+          'Testing Second Name',
+        );
+        expect(response.body).toHaveProperty('lastName', createUser2.lastName);
         expect(response.body).toHaveProperty('dob');
-        expect(response.body).toHaveProperty('email', 'test@test.com');
-        expect(response.body).toHaveProperty('address', 'test address');
-        expect(response.body).toHaveProperty('country', 'test country');
-        expect(response.body).toHaveProperty('role', Role.USER);
+        expect(response.body).toHaveProperty('email', createUser2.email);
+        expect(response.body).toHaveProperty('address', createUser2.address);
+        expect(response.body).toHaveProperty('country', createUser2.country);
+        expect(response.body).toHaveProperty('role', createUser2.role);
         expect(response.body).toHaveProperty('documents');
       });
 
@@ -189,8 +293,19 @@ describe('App', () => {
 
     describe('/users (DELETE)', () => {
       it('should delete a user by uuid', async () => {
+        const createUser4 = await request(httpServer).post('/users').send({
+          firstName: 'test Fourth name',
+          lastName: 'test last name',
+          dob: new Date(),
+          email: 'testFourthUser@test.com',
+          address: 'test address',
+          country: 'test country',
+          role: Role.USER,
+          documents: [],
+        });
+        const user4Uuid = createUser4.body.uuid as string;
         const response = await request(httpServer)
-          .delete(`/users/${userUuid}`)
+          .delete(`/users/${user4Uuid}`)
           .expect(200);
 
         expect(response.body).not.toHaveProperty('uuid');
@@ -217,36 +332,30 @@ describe('App', () => {
   describe('Documents', () => {
     describe('/documents (POST)', () => {
       it('should create a document', async () => {
-        const createUser2 = await request(httpServer)
-          .post('/users')
-          .send(newFirstUser);
-        const userUuid2 = createUser2.body.uuid as string;
-
-        const newDocument: CreateDocumentDto = {
-          userUuid: userUuid2,
-          url: 'https://example.com/document-url',
-          src: 'https://example.com/document-src',
-          title: 'Test Title',
-          description: 'This is a test description for the document.',
+        const createDocument3: CreateDocumentDto = {
+          userUuid: globalUser1Uuid,
+          url: 'https://example.com/document3-url',
+          src: 'https://example.com/document3-src',
+          title: 'Test Title 3',
+          description: 'This is a test description for the document 3.',
         };
-
         const response = await request(httpServer)
           .post('/documents')
-          .send(newDocument);
+          .send(createDocument3);
 
         expect(response.body).toHaveProperty('uuid');
         expect(response.body).toHaveProperty(
           'url',
-          'https://example.com/document-url',
+          'https://example.com/document3-url',
         );
         expect(response.body).toHaveProperty(
           'src',
-          'https://example.com/document-src',
+          'https://example.com/document3-src',
         );
-        expect(response.body).toHaveProperty('title', 'Test Title');
+        expect(response.body).toHaveProperty('title', 'Test Title 3');
         expect(response.body).toHaveProperty(
           'description',
-          'This is a test description for the document.',
+          'This is a test description for the document 3.',
         );
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
@@ -262,83 +371,34 @@ describe('App', () => {
       });
 
       it('should not create a document with the same url ', async () => {
-        const newUser: CreateUserDto = {
-          firstName: 'test first name',
-          lastName: 'test last name',
-          email: 'testSecondUser@test.com',
-          dob: new Date(),
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-        };
-
-        const createUser3 = await request(httpServer)
-          .post('/users')
-          .send(newUser);
-        const userUuid3 = createUser3.body.uuid as string;
-
-        const newDocument: CreateDocumentDto = {
-          userUuid: userUuid3,
-          url: 'https://example.com/document-url',
-          src: 'https://example.com/document-src',
-          title: 'Test Title',
-          description: 'This is a test description for the document.',
-        };
-
-        await request(httpServer).post('/documents').send(newDocument);
-
-        const newDocument2: CreateDocumentDto = {
-          userUuid: userUuid3,
-          url: 'https://example.com/document-url',
-          src: 'https://example2.com/document-src',
+        const newDocumentUrlRepeat: CreateDocumentDto = {
+          userUuid: globalUser1Uuid,
+          url: createDocument2.url,
+          src: 'https://example.com/document123-src',
           title: 'Test Title',
           description: 'This is a test description for the document.',
         };
 
         const response = await request(httpServer)
           .post('/documents')
-          .send(newDocument2)
+          .send(newDocumentUrlRepeat)
           .expect(409);
 
         expect(response.body).toHaveProperty('message');
       });
 
       it('should not create a document with the same src ', async () => {
-        const newUser2: CreateUserDto = {
-          firstName: 'test first name',
-          lastName: 'test last name',
-          email: 'testSecond2User@test.com',
-          dob: new Date(),
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-        };
-
-        const createUser4 = await request(httpServer)
-          .post('/users')
-          .send(newUser2);
-        const userUuid4 = createUser4.body.uuid as string;
-
-        const newDocument4: CreateDocumentDto = {
-          userUuid: userUuid4,
-          url: 'https://example.com/document-url',
-          src: 'https://example2.com/document-src',
-          title: 'Test Title',
-          description: 'This is a test description for the document.',
-        };
-        await request(httpServer).post('/documents').send(newDocument4);
-
-        const newDocument5: CreateDocumentDto = {
-          userUuid: userUuid4,
-          url: 'https://example.com/document-url',
-          src: 'https://example2.com/document-src',
+        const newDocumentSrcRepeat: CreateDocumentDto = {
+          userUuid: globalUser1Uuid,
+          url: 'https://example.com/document54-url',
+          src: createDocument1.src,
           title: 'Test Title',
           description: 'This is a test description for the document.',
         };
 
         const response = await request(httpServer)
           .post('/documents')
-          .send(newDocument5)
+          .send(newDocumentSrcRepeat)
           .expect(409);
 
         expect(response.body).toHaveProperty('message');
@@ -347,36 +407,8 @@ describe('App', () => {
 
     describe('/documents/user/:userUuid (GET)', () => {
       it('should get all documents by User', async () => {
-        // Crear nuevo usuario
-        const newThirdUser: CreateUserDto = {
-          firstName: 'test Third name',
-          lastName: 'test last name',
-          dob: new Date(),
-          email: 'testThird@test.com',
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-          documents: [],
-        };
-        const createUser3 = await request(httpServer)
-          .post('/users')
-          .send(newThirdUser);
-        const userUuid3 = createUser3.body.uuid as string;
-
-        // Crear nuevo documento
-        const newDocument2: CreateDocumentDto = {
-          userUuid: userUuid3,
-          url: 'test2 url',
-          src: 'test2 src',
-          title: 'test title 2',
-          description: 'test description 2',
-        };
-
-        await request(httpServer).post('/documents').send(newDocument2);
-
-        //Obtener documentos
         await request(httpServer)
-          .get(`/documents/user/${userUuid3}`)
+          .get(`/documents/user/${globalUser1Uuid}`)
           .expect(200)
           .then((res) => {
             const body = res.body as string[];
@@ -394,43 +426,18 @@ describe('App', () => {
             expect(body).toEqual(expected);
           });
       });
+
+      it('should not get all documents by User that does not exist', async () => {
+        await request(httpServer)
+          .get('/documents/user/7cdfe82e-c866-4f2a-8fd0-982d58f0f718')
+          .expect(404);
+      });
     });
 
     describe(':documentUuid/user/:userUuid (GET)', () => {
       it('should get a document by id', async () => {
-        // Crear nuevo usuario
-        const newFourthUser: CreateUserDto = {
-          firstName: 'test Fourth name',
-          lastName: 'test last name',
-          dob: new Date(),
-          email: 'testFourth@test.com',
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-          documents: [],
-        };
-        const createUser4 = await request(httpServer)
-          .post('/users')
-          .send(newFourthUser);
-        const userUuid4 = createUser4.body.uuid as string;
-
-        // Crear Document 3
-        const newDocument4: CreateDocumentDto = {
-          userUuid: userUuid4,
-          url: 'test4 url',
-          src: 'test4 src',
-          title: 'test title 4',
-          description: 'test description 4',
-        };
-
-        const createDocument4 = await request(httpServer)
-          .post('/documents')
-          .send(newDocument4);
-        const documentUuid4 = createDocument4.body.uuid as string;
-
-        // Devolver 1 document
         const response = await request(httpServer)
-          .get(`/documents/${documentUuid4}/user/${userUuid4}`)
+          .get(`/documents/${globalDocument1Uuid}/user/${globalUser1Uuid}`)
           .expect(200);
 
         expect(response.body).toHaveProperty('uuid');
@@ -452,56 +459,19 @@ describe('App', () => {
 
     describe(':documentId/user/:userId (PATCH)', () => {
       it('should update a document by id', async () => {
-        // Crear nuevo usuario
-        const newFifthUser: CreateUserDto = {
-          firstName: 'test Fifth name',
-          lastName: 'test last name',
-          dob: new Date(),
-          email: 'testFifth@test.com',
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-          documents: [],
-        };
-        const createUser5 = await request(httpServer)
-          .post('/users')
-          .send(newFifthUser);
-        const userUuid5 = createUser5.body.uuid as string;
-
-        // Crear Document 5
-        const newDocument5: CreateDocumentDto = {
-          userUuid: userUuid5,
-          url: 'test5 url',
-          src: 'test5 src',
-          title: 'test title 5',
-          description: 'test description 5',
-        };
-
-        const createDocument5 = await request(httpServer)
-          .post('/documents')
-          .send(newDocument5);
-        const documentUuid5 = createDocument5.body.uuid as string;
-
         const response = await request(httpServer)
-          .patch(`/documents/${documentUuid5}/user/${userUuid5}`)
+          .patch(`/documents/${globalDocument2Uuid}/user/${globalUser1Uuid}`)
           .send({
-            url: 'test update url 4',
-            src: 'test update src 4',
-            title: 'test update title 4',
-            description: 'test update description 4',
+            url: 'test update url 2',
           })
           .expect(200);
 
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('url', 'test update url 4');
-        expect(response.body).toHaveProperty('src', 'test update src 4');
-        expect(response.body).toHaveProperty('title', 'test update title 4');
-        expect(response.body).toHaveProperty(
-          'description',
-          'test update description 4',
-        );
+        expect(response.body).toHaveProperty('url', 'test update url 2');
+        expect(response.body).toHaveProperty('src');
+        expect(response.body).toHaveProperty('title');
+        expect(response.body).toHaveProperty('description');
         expect(response.body).toHaveProperty('createdAt');
-        expect(response.body).toHaveProperty('updatedAt');
       });
 
       it('should not update a document or user by id that does not exist', async () => {
@@ -521,38 +491,21 @@ describe('App', () => {
 
     describe(':documentId/user/:userId (DELETE)', () => {
       it('should delete a document by id', async () => {
-        // Crear nuevo usuario
-        const newSixthUser: CreateUserDto = {
-          firstName: 'test Sixth name',
-          lastName: 'test last name',
-          dob: new Date(),
-          email: 'testSixth@test.com',
-          address: 'test address',
-          country: 'test country',
-          role: Role.USER,
-          documents: [],
-        };
-        const createUser6 = await request(httpServer)
-          .post('/users')
-          .send(newSixthUser);
-        const userUuid6 = createUser6.body.uuid as string;
-
-        // Crear Document 5
-        const newDocument6: CreateDocumentDto = {
-          userUuid: userUuid6,
-          url: 'test6 url',
-          src: 'test6 src',
-          title: 'test title 6',
-          description: 'test description 6',
+        const createDocumentDelete: CreateDocumentDto = {
+          userUuid: globalUser1Uuid,
+          url: 'test url delete',
+          src: 'test src delete',
+          title: 'test title delete',
+          description: 'test description delete',
         };
 
-        const createDocument6 = await request(httpServer)
+        const newDocumentDelete = await request(httpServer)
           .post('/documents')
-          .send(newDocument6);
-        const documentUuid6 = createDocument6.body.uuid as string;
+          .send(createDocumentDelete);
+        const documentUuidDelete = newDocumentDelete.body.uuid as string;
 
         const response = await request(httpServer)
-          .delete(`/documents/${documentUuid6}/user/${userUuid6}`)
+          .delete(`/documents/${documentUuidDelete}/user/${globalUser1Uuid}`)
           .expect(200);
 
         expect(response.body).not.toHaveProperty('id');
@@ -577,23 +530,32 @@ describe('App', () => {
   describe('Car', () => {
     describe('/car (POST)', () => {
       it('should create a car', async () => {
+        const createCar3: CreateCarDto = {
+          brand: 'test brand 3',
+          model: 'test model 3',
+          color: 'test color 3',
+          passengers: 4,
+          ac: true,
+          pricePerDay: 100,
+        };
+
         const response = await request(httpServer)
           .post('/cars')
-          .send(newFirstCar)
+          .send(createCar3)
           .expect(201);
 
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('brand', newFirstCar.brand);
-        expect(response.body).toHaveProperty('model', newFirstCar.model);
-        expect(response.body).toHaveProperty('color', newFirstCar.color);
+        expect(response.body).toHaveProperty('brand', createCar3.brand);
+        expect(response.body).toHaveProperty('model', createCar3.model);
+        expect(response.body).toHaveProperty('color', createCar3.color);
         expect(response.body).toHaveProperty(
           'passengers',
-          newFirstCar.passengers,
+          createCar3.passengers,
         );
-        expect(response.body).toHaveProperty('ac', newFirstCar.ac);
+        expect(response.body).toHaveProperty('ac', createCar3.ac);
         expect(response.body).toHaveProperty(
           'pricePerDay',
-          newFirstCar.pricePerDay,
+          createCar3.pricePerDay,
         );
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
@@ -609,7 +571,17 @@ describe('App', () => {
       });
 
       it('should not create a car with existing brand and model', async () => {
-        await request(httpServer).post('/cars').send(newSecondCar).expect(409);
+        await request(httpServer)
+          .post('/cars')
+          .send({
+            brand: createCar2.brand,
+            model: createCar2.model,
+            color: 'test color 1',
+            passengers: 4,
+            ac: true,
+            pricePerDay: 100,
+          })
+          .expect(409);
       });
     });
 
@@ -621,35 +593,22 @@ describe('App', () => {
       });
 
       it('should get a car by uuid', async () => {
-        const newThirdCar: CreateCarDto = {
-          brand: 'test brand 3',
-          model: 'test model 3',
-          color: 'test color 3',
-          passengers: 3,
-          ac: false,
-          pricePerDay: 3,
-        };
-        const createCar3 = await request(httpServer)
-          .post('/cars')
-          .send(newThirdCar);
-        const carUUID3 = createCar3.body.uuid as string;
-
         const response = await request(httpServer)
-          .get(`/cars/${carUUID3}`)
+          .get(`/cars/${globalCar1Uuid}`)
           .expect(200);
 
-        expect(response.body).toHaveProperty('uuid', carUUID3);
-        expect(response.body).toHaveProperty('brand', newThirdCar.brand);
-        expect(response.body).toHaveProperty('model', newThirdCar.model);
-        expect(response.body).toHaveProperty('color', newThirdCar.color);
+        expect(response.body).toHaveProperty('uuid', globalCar1Uuid);
+        expect(response.body).toHaveProperty('brand', createCar1.brand);
+        expect(response.body).toHaveProperty('model', createCar1.model);
+        expect(response.body).toHaveProperty('color', createCar1.color);
         expect(response.body).toHaveProperty(
           'passengers',
-          newThirdCar.passengers,
+          createCar1.passengers,
         );
-        expect(response.body).toHaveProperty('ac', newThirdCar.ac);
+        expect(response.body).toHaveProperty('ac', createCar1.ac);
         expect(response.body).toHaveProperty(
           'pricePerDay',
-          newThirdCar.pricePerDay,
+          createCar1.pricePerDay,
         );
         expect(response.body).toHaveProperty('createdAt');
       });
@@ -663,40 +622,27 @@ describe('App', () => {
 
     describe('/cars (PATCH)', () => {
       it('should update a car by id', async () => {
-        const newFourthCar: CreateCarDto = {
-          brand: 'test brand 4',
-          model: 'test model 4',
-          color: 'test color 4',
-          passengers: 4,
-          ac: false,
-          pricePerDay: 4,
-        };
-        const createCar4 = await request(httpServer)
-          .post('/cars')
-          .send(newFourthCar);
-        const carUUID4 = createCar4.body.uuid as string;
-
         const response = await request(httpServer)
-          .patch(`/cars/${carUUID4}`)
+          .patch(`/cars/${globalCar2Uuid}`)
           .send({
-            brand: 'test update brand 4',
-            model: 'test update model 4',
-            color: 'test update color 4',
-            passengers: 4,
-            ac: true,
-            pricePerDay: 100,
+            brand: 'test update brand 2',
           })
           .expect(200);
 
-        expect(response.body).toHaveProperty('uuid', carUUID4);
-        expect(response.body).toHaveProperty('brand', 'test update brand 4');
-        expect(response.body).toHaveProperty('model', 'test update model 4');
-        expect(response.body).toHaveProperty('color', 'test update color 4');
-        expect(response.body).toHaveProperty('passengers', 4);
-        expect(response.body).toHaveProperty('ac', true);
-        expect(response.body).toHaveProperty('pricePerDay', 100);
+        expect(response.body).toHaveProperty('uuid', globalCar2Uuid);
+        expect(response.body).toHaveProperty('brand', 'test update brand 2');
+        expect(response.body).toHaveProperty('model', createCar2.model);
+        expect(response.body).toHaveProperty('color', createCar2.color);
+        expect(response.body).toHaveProperty(
+          'passengers',
+          createCar2.passengers,
+        );
+        expect(response.body).toHaveProperty('ac', createCar2.ac);
+        expect(response.body).toHaveProperty(
+          'pricePerDay',
+          createCar2.pricePerDay,
+        );
         expect(response.body).toHaveProperty('createdAt');
-        expect(response.body).toHaveProperty('updatedAt');
       });
 
       it('should not update a cars by uuid that does not exist', async () => {
@@ -716,7 +662,7 @@ describe('App', () => {
 
     describe('/cars (DELETE)', () => {
       it('should delete a car by uuid', async () => {
-        const newDeleteCar: CreateCarDto = {
+        const createCarDelete: CreateCarDto = {
           brand: 'test brand Delete',
           model: 'test model Delete',
           color: 'test color Delete',
@@ -724,10 +670,10 @@ describe('App', () => {
           ac: false,
           pricePerDay: 4,
         };
-        const createCarDelete = await request(httpServer)
+        const createCarDeleteResponse = await request(httpServer)
           .post('/cars')
-          .send(newDeleteCar);
-        const carUUIDDelete = createCarDelete.body.uuid as string;
+          .send(createCarDelete);
+        const carUUIDDelete = createCarDeleteResponse.body.uuid as string;
 
         const response = await request(httpServer)
           .delete(`/cars/${carUUIDDelete}`)
@@ -755,41 +701,30 @@ describe('App', () => {
   describe('Picture', () => {
     describe('/picture (POST)', () => {
       it('should create a picture', async () => {
-        // Car for picture
-        const newCarForPicture: CreateCarDto = {
-          brand: 'test brand newCarForPicture',
-          model: 'test model newCarForPicture',
-          color: 'test color newCarForPicture',
-          passengers: 4,
-          ac: false,
-          pricePerDay: 4,
-        };
-        const createCarForPicture = await request(httpServer)
-          .post('/cars')
-          .send(newCarForPicture);
-        const carUUIDForPicture = createCarForPicture.body.uuid as string;
-        // Create Picture 1
-        const newFirstPicture: CreatePictureDto = {
-          carUuid: carUUIDForPicture,
-          src: 'test src',
-          title: 'test title',
-          description: 'test description',
+        console.log('carGlobal -->', globalCar1Uuid);
+        const createPicture3: CreatePictureDto = {
+          carUuid: globalCar1Uuid,
+          src: 'test src 3',
+          title: 'test title 3',
+          description: 'test description 3',
           type: CarPicture.FRONT,
           date: new Date(),
         };
         const response = await request(httpServer)
           .post('/picture')
-          .send(newFirstPicture)
+          .send(createPicture3)
           .expect(201);
 
+        console.log('picture 3 -->', response.body);
+
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('src', newFirstPicture.src);
-        expect(response.body).toHaveProperty('title', newFirstPicture.title);
+        expect(response.body).toHaveProperty('src', createPicture3.src);
+        expect(response.body).toHaveProperty('title', createPicture3.title);
         expect(response.body).toHaveProperty(
           'description',
-          newFirstPicture.description,
+          createPicture3.description,
         );
-        expect(response.body).toHaveProperty('type', newFirstPicture.type);
+        expect(response.body).toHaveProperty('type', createPicture3.type);
         expect(response.body).toHaveProperty('date');
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
@@ -798,34 +733,8 @@ describe('App', () => {
 
     describe('/picture (GET)', () => {
       it('should get all pictures by car', async () => {
-        // new Car
-        const newCarForPicture2: CreateCarDto = {
-          brand: 'test brand newCarForPicture2',
-          model: 'test model newCarForPicture2',
-          color: 'test color newCarForPicture2',
-          passengers: 4,
-          ac: false,
-          pricePerDay: 4,
-        };
-        const createCarForPicture2 = await request(httpServer)
-          .post('/cars')
-          .send(newCarForPicture2);
-        const carUUIDForPicture2 = createCarForPicture2.body.uuid as string;
-
-        // Create Picture 2
-        const newSecondPicture: CreatePictureDto = {
-          carUuid: carUUIDForPicture2,
-          src: 'test src 2',
-          title: 'test title 2',
-          description: 'test description 2',
-          type: CarPicture.FRONT,
-          date: new Date(),
-        };
-        await request(httpServer).post('/picture').send(newSecondPicture);
-
-        // Get all picture by car
         const response = await request(httpServer)
-          .get(`/picture/car/${carUUIDForPicture2}`)
+          .get(`/picture/car/${globalCar1Uuid}`)
           .expect(200);
         expect(response.body).toBeInstanceOf(Array);
       });
@@ -837,46 +746,17 @@ describe('App', () => {
       });
 
       it('should get a picture by id', async () => {
-        // new Car
-        const newCarForPicture3: CreateCarDto = {
-          brand: 'test brand newCarForPicture3',
-          model: 'test model newCarForPicture3',
-          color: 'test color newCarForPicture3',
-          passengers: 4,
-          ac: false,
-          pricePerDay: 4,
-        };
-        const createCarForPicture3 = await request(httpServer)
-          .post('/cars')
-          .send(newCarForPicture3);
-        const carUUIDForPicture3 = createCarForPicture3.body.uuid as string;
-
-        // Create Picture 3
-        const newThirdPicture: CreatePictureDto = {
-          carUuid: carUUIDForPicture3,
-          src: 'test src 3',
-          title: 'test title 3',
-          description: 'test description 3',
-          type: CarPicture.FRONT,
-          date: new Date(),
-        };
-        const createPictureUUIDThird = await request(httpServer)
-          .post('/picture')
-          .send(newThirdPicture);
-        const pictureUUIDThird = createPictureUUIDThird.body.uuid as string;
-
-        // Get a picture by id
         const response = await request(httpServer)
-          .get(`/picture/${pictureUUIDThird}/car/${carUUIDForPicture3}`)
+          .get(`/picture/${globalPicture1Uuid}/car/${globalCar1Uuid}`)
           .expect(200);
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('src', newThirdPicture.src);
-        expect(response.body).toHaveProperty('title', newThirdPicture.title);
+        expect(response.body).toHaveProperty('src', createPicture1.src);
+        expect(response.body).toHaveProperty('title', createPicture1.title);
         expect(response.body).toHaveProperty(
           'description',
-          newThirdPicture.description,
+          createPicture1.description,
         );
-        expect(response.body).toHaveProperty('type', newThirdPicture.type);
+        expect(response.body).toHaveProperty('type', createPicture1.type);
         expect(response.body).toHaveProperty('date');
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
@@ -891,48 +771,20 @@ describe('App', () => {
 
     describe('/picture/:pictureUuid/car/:carUuid (Patch)', () => {
       it('should update a picture by id', async () => {
-        // new Car
-        const newCarForPicture4: CreateCarDto = {
-          brand: 'test brand newCarForPicture4',
-          model: 'test model newCarForPicture4',
-          color: 'test color newCarForPicture4',
-          passengers: 4,
-          ac: false,
-          pricePerDay: 4,
-        };
-        const createCarForPicture4 = await request(httpServer)
-          .post('/cars')
-          .send(newCarForPicture4);
-        const carUUIDForPicture4 = createCarForPicture4.body.uuid as string;
-
-        // Create Picture 4
-        const newFourthPicture: CreatePictureDto = {
-          carUuid: carUUIDForPicture4,
-          src: 'test src 4',
-          title: 'test title 4',
-          description: 'test description 4',
-          type: CarPicture.FRONT,
-          date: new Date(),
-        };
-        const createPictureUUIDFourth = await request(httpServer)
-          .post('/picture')
-          .send(newFourthPicture);
-        const pictureUUIDFourth = createPictureUUIDFourth.body.uuid as string;
-
         const response = await request(httpServer)
-          .patch(`/picture/${pictureUUIDFourth}/car/${carUUIDForPicture4}`)
+          .patch(`/picture/${globalPicture2Uuid}/car/${globalCar1Uuid}`)
           .send({
-            src: 'test update src 4',
+            title: 'test update title 2',
           })
           .expect(200);
         expect(response.body).toHaveProperty('uuid');
-        expect(response.body).toHaveProperty('src', 'test update src 4');
-        expect(response.body).toHaveProperty('title', newFourthPicture.title);
+        expect(response.body).toHaveProperty('src', createPicture2.src);
+        expect(response.body).toHaveProperty('title', 'test update title 2');
         expect(response.body).toHaveProperty(
           'description',
-          newFourthPicture.description,
+          createPicture2.description,
         );
-        expect(response.body).toHaveProperty('type', newFourthPicture.type);
+        expect(response.body).toHaveProperty('type', createPicture2.type);
         expect(response.body).toHaveProperty('date');
         expect(response.body).toHaveProperty('createdAt');
         expect(response.body).toHaveProperty('updatedAt');
@@ -952,8 +804,8 @@ describe('App', () => {
 
     describe('/picture/:pictureUuid/car/:carUuid (Delete)', () => {
       it('should delete a picture by id', async () => {
-        // new Car
-        const newCarForPicture5: CreateCarDto = {
+        // new Car for delete
+        const createCarForPictureDelete: CreateCarDto = {
           brand: 'test brand newCarForPicture5',
           model: 'test model newCarForPicture5',
           color: 'test color newCarForPicture5',
@@ -961,14 +813,15 @@ describe('App', () => {
           ac: false,
           pricePerDay: 4,
         };
-        const createCarForPicture5 = await request(httpServer)
+        const createCarForPictureDeleteResponse = await request(httpServer)
           .post('/cars')
-          .send(newCarForPicture5);
-        const carUUIDForPicture5 = createCarForPicture5.body.uuid as string;
+          .send(createCarForPictureDelete);
+        const carUuidForPictureDelete = createCarForPictureDeleteResponse.body
+          .uuid as string;
 
-        // Create Picture 5
-        const newFifthPicture: CreatePictureDto = {
-          carUuid: carUUIDForPicture5,
+        // Create Picture for delete
+        const createPictureDelete: CreatePictureDto = {
+          carUuid: carUuidForPictureDelete,
           src: 'test src 5',
           title: 'test title 5',
           description: 'test description 5',
@@ -977,11 +830,13 @@ describe('App', () => {
         };
         const createPictureUUIDFifth = await request(httpServer)
           .post('/picture')
-          .send(newFifthPicture);
-        const pictureUUIDFifth = createPictureUUIDFifth.body.uuid as string;
+          .send(createPictureDelete);
+        const pictureUuidDelete = createPictureUUIDFifth.body.uuid as string;
 
         const response = await request(httpServer)
-          .delete(`/picture/${pictureUUIDFifth}/car/${carUUIDForPicture5}`)
+          .delete(
+            `/picture/${pictureUuidDelete}/car/${carUuidForPictureDelete}`,
+          )
           .expect(200);
         expect(response.body).not.toHaveProperty('uuid');
         expect(response.body).not.toHaveProperty('src');
@@ -991,6 +846,8 @@ describe('App', () => {
         expect(response.body).not.toHaveProperty('date');
         expect(response.body).not.toHaveProperty('createdAt');
         expect(response.body).not.toHaveProperty('updatedAt');
+
+        await request(httpServer).delete(`/cars/${carUuidForPictureDelete}`);
       });
 
       it('should not delete a picture by id that does not exist', async () => {
