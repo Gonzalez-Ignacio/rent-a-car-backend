@@ -9,6 +9,7 @@ import { CreateDocumentDto } from './modules/document/domain/dto/create-document
 import { CreateCarDto } from './modules/car/domain/dto/create-car.dto';
 import { CreatePictureDto } from './modules/picture/domain/dto/create-picture.dto';
 import { CarPicture } from './modules/picture/domain/entity/picture.entity';
+import { CreateRentDto } from './modules/rent/domain/dto/create-rent.dto';
 
 describe('App', () => {
   let app: INestApplication;
@@ -857,6 +858,40 @@ describe('App', () => {
           )
           .expect(404);
       });
+    });
+  });
+
+  describe('/rent (POST)', () => {
+    it('should create a rent', async () => {
+      const createRent3: CreateRentDto = {
+        carUuid: globalCar1Uuid,
+        userUuid: globalUser1Uuid,
+        acceptedDate: new Date(),
+        rejected: false,
+        startingDate: new Date(),
+        dueDate: new Date(),
+        endDate: new Date(),
+      };
+
+      const response = await request(httpServer)
+        .post('/rent')
+        .send(createRent3)
+        .expect(201);
+      expect(response.body).toHaveProperty('uuid');
+      expect(response.body).toHaveProperty('car');
+      expect(response.body).toHaveProperty(
+        'pricePerDay',
+        createCar1.pricePerDay,
+      );
+      expect(response.body).toHaveProperty('user');
+      expect(response.body).toHaveProperty('admin');
+      expect(response.body).toHaveProperty('acceptedDate');
+      expect(response.body).toHaveProperty('rejected');
+      expect(response.body).toHaveProperty('startingDate');
+      expect(response.body).toHaveProperty('dueDate');
+      expect(response.body).toHaveProperty('endDate');
+      expect(response.body).toHaveProperty('createdAt');
+      expect(response.body).toHaveProperty('updatedAt');
     });
   });
 });
