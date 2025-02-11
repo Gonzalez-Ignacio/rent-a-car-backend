@@ -15,6 +15,23 @@ export class RentService {
     private readonly userService: UserService,
   ) {}
 
+  async getAllRents(): Promise<Rent[]> {
+    return this.rentRepository.finAll();
+  }
+
+  async getRent(userUuid: string, rentUuid: string): Promise<Rent> {
+    const rentFound = await this.rentRepository.findOneRentByUser(
+      userUuid,
+      rentUuid,
+    );
+
+    if (!rentFound) {
+      throw new HttpException('Rent or User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return rentFound;
+  }
+
   async createRent(rent: CreateRentDto): Promise<Rent> {
     const car = await this.carService.getCarById(rent.carUuid);
     const user = await this.userService.getUser(rent.userUuid);
